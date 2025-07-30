@@ -15,7 +15,7 @@ function App() {
   }
 
   return (
-    <div className="app">
+    <div className="app bg-slate-800">
       {currentPage === 'signin' ? (
         <SignIn onSignInSuccess={handleSignInSuccess} />
       ) : (

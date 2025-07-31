@@ -65,30 +65,3 @@ function App() {
 }
 
 export default App;
-
-
-
-
-
-{/*import { useState } from 'react'
-import SignIn from './components/SignIn'
-import Login from './components/Login'
-import Dashboard from './components/Dashboard'
-import './App.css'
-
-function App() {
-  const [isLoggedIn, setisLoggedIn] = useState(false)
-
-  return (
-    <div className="app bg-slate-900 min-h-screen">
-      {isLoggedIn ? (
-        <Login />
-      ) : (
-        <SignIn />
-      )}
-     <Dashboard domainName="example.com" />
-    </div>
-  )
-}
-
-export default App */}

@@ -4,22 +4,14 @@ import Login from './components/Login'
 import './App.css'
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('signin')
-
-  const handleSignInSuccess = () => {
-    setCurrentPage('login')
-  }
-
-  const handleBackToSignIn = () => {
-    setCurrentPage('signin')
-  }
+  const [isLoggedIn, setisLoggedIn] = useState(false)
 
   return (
-    <div className="app bg-slate-800">
-      {currentPage === 'signin' ? (
-        <SignIn onSignInSuccess={handleSignInSuccess} />
+    <div className="app bg-slate-900 min-h-screen">
+      {isLoggedIn ? (
+        <Login />
       ) : (
-        <Login onBackToSignIn={handleBackToSignIn} />
+        <SignIn />
       )}
     </div>
   )

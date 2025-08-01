@@ -7,5 +7,10 @@
   justify-content: center;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: 0;
-  padding: 0;
+  padding: 1rem;
+  box-sizing: border-box;
+  overflow: hidden; /* Remove scrollbars */
+  position: fixed; /* Prevent any scrolling */
+  top: 0;
+  left: 0;
 }

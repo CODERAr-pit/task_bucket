@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@theme {
+    --color-primary: #f5ebe0;
+    --color-secondary-50: #eff6ff;
+    --color-secondary-100: #dbeafe;
+}

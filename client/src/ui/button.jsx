@@ -21,12 +21,3 @@ export default function DomainName({ domainName = "Loading..." }) {
     </nav>
   );
 }
-
-
-{/*With domain from database
-<NameDisplay domainName="example.com" >
-
-// While loading from database
-{  <NameDisplay /> */}
-
-

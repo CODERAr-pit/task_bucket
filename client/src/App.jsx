@@ -3,9 +3,10 @@ import SignUp from './components/SignIn'
 import Login from './components/Login'
 import Dashboard from './components/Dashboard'
 import './App.css'
+import {TaskProvider} from "./context/TaskContext.jsx";
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('login') // Start with login page
+  const [currentPage, setCurrentPage] = useState('dashboard') // Start with login page
 
   // Handle successful signup - go to login
   const handleSignUpSuccess = () => {
@@ -55,10 +56,12 @@ function App() {
       )}
       
       {currentPage === 'dashboard' && (
-        <Dashboard 
-          domainName={getUserDomain()}
-          onLogout={handleLogout}
-        />
+        <TaskProvider>
+          <Dashboard
+            domainName={getUserDomain()}
+            onLogout={handleLogout}
+          />
+        </TaskProvider>
       )}
     </div>
   )

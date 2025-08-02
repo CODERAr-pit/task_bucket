@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import './SignIn.css';
 
 const SignIn = ({ onSignInSuccess }) => {
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
-    countryCode: '+91',
     number: '',
     year: '',
+    domain: '',
     password: '',
     confirmPassword: ''
   });
@@ -21,41 +21,64 @@ const SignIn = ({ onSignInSuccess }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     if (formData.password !== formData.confirmPassword) {
       alert('Passwords do not match!');
       return;
     }
 
-    if (!formData.name || !formData.email || !formData.countryCode || !formData.number || !formData.year || !formData.password) {
+    if (
+        !formData.firstName ||
+        !formData.lastName ||
+        !formData.email ||
+        !formData.number ||
+        !formData.year ||
+        !formData.domain ||
+        !formData.password
+    ) {
       alert('Please fill in all fields!');
       return;
     }
 
-    // Store user data (in real app, this would be sent to backend)
     localStorage.setItem('userData', JSON.stringify(formData));
     onSignInSuccess();
   };
 
+
   return (
-    <div className="signin-container">
-      <div className="signin-form">
-        <h2>Sign In</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="name">Name</label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-            />
+    <div className="w-full max-w-[800px] px-4 py-12 mx-auto min-h-screen">
+      <div className="bg-white p-10 rounded-xl shadow-xl border border-white/80">
+        <h2 className="text-3xl font-semibold text-center text-gray-800 mb-8">Sign In</h2>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between gap-4">
+            <div className="flex flex-col w-full">
+              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+              <input
+                type="text"
+                id="firstName"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+              />
+            </div>
+            <div className="flex flex-col w-full">
+              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+              <input
+                  type="text"
+                  id="lastName"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+              />
+            </div>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <input
               type="email"
               id="email"
@@ -63,25 +86,12 @@ const SignIn = ({ onSignInSuccess }) => {
               value={formData.email}
               onChange={handleChange}
               required
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="contact">Contact</label>
-            <div className="contact-row">
-              <select
-                name="countryCode"
-                value={formData.countryCode}
-                onChange={handleChange}
-                className="country-code"
-                required
-              >
-                <option value="+91">+91 (IND)</option>
-                <option value="+1">+1 (USA)</option>
-                <option value="+44">+44 (UK)</option>
-                <option value="+86">+86 (CHN)</option>
-                <option value="+81">+81 (JPN)</option>
-              </select>
+          <div>
+            <label htmlFor="contact" className="block text-sm font-medium text-gray-700 mb-1">Contact</label>
               <input
                 type="text"
                 id="number"
@@ -89,19 +99,19 @@ const SignIn = ({ onSignInSuccess }) => {
                 value={formData.number}
                 onChange={handleChange}
                 placeholder="Enter your contact number"
-                className="phone-input"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
                 required
               />
-            </div>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="year">Year</label>
+          <div>
+            <label htmlFor="year" className="block text-sm font-medium text-gray-700 mb-1">Year</label>
             <select
               id="year"
               name="year"
               value={formData.year}
               onChange={handleChange}
+              className="w-full px-4 py-3 border-2  border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
               required
             >
               <option value="">Select Year</option>
@@ -112,9 +122,27 @@ const SignIn = ({ onSignInSuccess }) => {
             </select>
           </div>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="password">Password</label>
+          <div>
+            <label htmlFor="domain" className="block text-sm font-medium text-gray-700 mb-1">Domain</label>
+            <select
+              id="domain"
+              name="domain"
+              value={formData.domain}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+              required
+            >
+              <option value="">Select Domain</option>
+              <option value="WebD">Web Development</option>
+              <option value="Video Editing">Video Editing</option>
+              <option value="Graphic Designing">Graphic Designing</option>
+              <option value="Content">Content Writing</option>
+            </select>
+          </div>
+
+          <div className="flex flex-col sm:flex-row justify-between gap-4">
+            <div className="flex flex-col w-full">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
               <input
                 type="password"
                 id="password"
@@ -122,11 +150,12 @@ const SignIn = ({ onSignInSuccess }) => {
                 value={formData.password}
                 onChange={handleChange}
                 required
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
               />
             </div>
 
-            <div className="form-group">
-              <label htmlFor="confirmPassword">Confirm Password</label>
+            <div className="flex flex-col w-full">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
               <input
                 type="password"
                 id="confirmPassword"
@@ -134,11 +163,17 @@ const SignIn = ({ onSignInSuccess }) => {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 required
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
               />
             </div>
           </div>
 
-          <button type="submit" className="signin-btn">Sign In</button>
+          <button
+            type="submit"
+            className="w-full mt-4 py-3 bg-slate-800 text-white font-semibold rounded-lg shadow-md hover:bg-slate-900"
+          >
+            Sign In
+          </button>
         </form>
       </div>
     </div>

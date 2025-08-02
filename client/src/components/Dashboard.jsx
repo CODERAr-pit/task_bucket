@@ -1,12 +1,14 @@
 import React from 'react';
-import TaskCard from "../ui/card.jsx"; // Adjust path as needed
-import Navbar from "../ui/Navbar.jsx"; // Adjust path as needed
-import { useTaskContext } from "../context/TaskContext";
+import TaskCard from "../ui/card.jsx";
+import Navbar from "../ui/Navbar.jsx";
+import {useTaskContext} from "../context/TaskContext";
+import {Plus} from "lucide-react";
+import {Link} from "react-router";
 
 const Dashboard = ({ domainName = "example.com" }) => {
   const { selectedDomain, domainMap } = useTaskContext();
 
-  console.log('Dashboard render - selectedDomain:', selectedDomain); // Debug log
+  console.log('Dashboard render - selectedDomain:', selectedDomain);
 
   const sampleTasks = [
     {
@@ -81,20 +83,30 @@ const Dashboard = ({ domainName = "example.com" }) => {
       ? sampleTasks
       : sampleTasks.filter(task => task.domain === domainMap[selectedDomain]);
 
-  console.log('Filtered tasks:', filteredTasks.length); // Debug log
+  console.log('Filtered tasks:', filteredTasks.length);
 
   return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
 
         <div className="max-w-[1700px] mx-auto px-4 py-6">
-          <div className="mb-4">
-            <h2 className="text-xl font-semibold text-gray-700">
-              {selectedDomain === 'General' ? 'All Tasks' : `${selectedDomain} Tasks`}
-            </h2>
-            <p className="text-gray-500">
-              Showing {filteredTasks.length} task{filteredTasks.length !== 1 ? 's' : ''}
-            </p>
+          <div className="mb-4 flex flex-row justify-between items-center">
+            <div>
+              <h2 className="text-l sm:text-xl font-semibold text-gray-700">
+                {selectedDomain === 'General' ? 'All Tasks' : `${selectedDomain} Tasks`}
+              </h2>
+              <p className="text-gray-500">
+                Showing {filteredTasks.length} task{filteredTasks.length !== 1 ? 's' : ''}
+              </p>
+            </div>
+            <div>
+              <Link to="/tasks">
+                <button className="bg-black/80 hover:bg-black text-white w-full py-2 px-3 rounded-lg font-medium text-sm transition-all duration-200 hover:shadow-md flex items-center justify-center gap-1">
+                  <Plus size={20}/>
+                  Create New Task
+                </button>
+              </Link>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

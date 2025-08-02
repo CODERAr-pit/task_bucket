@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  User,
   Calendar,
   Clock,
   AlertCircle,
@@ -259,7 +258,7 @@ const TaskCard = ({
               className={[
                 isHover ? domainColors.hoverBg : domainColors.bg,
                 domainColors.text,
-                'w-full py-2 px-3 rounded-lg font-medium text-sm transition-all duration-200 hover:shadow-md flex items-center justify-center gap-2'
+                'w-full py-2 px-3 rounded-lg font-medium text-sm hover:shadow-md flex items-center justify-center gap-2'
               ].join(' ')}
               onMouseEnter={() => setHover(true)}
               onMouseLeave={() => setHover(false)}

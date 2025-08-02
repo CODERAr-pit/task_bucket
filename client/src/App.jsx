@@ -3,6 +3,7 @@ import SignUp from './components/SignIn'
 import Login from './components/Login'
 import Dashboard from './components/Dashboard'
 import './App.css'
+// import { CreateTaskForm } from './components/TaskForm'
 
 function App() {
   const [currentPage, setCurrentPage] = useState('login') // Start with login page
@@ -39,27 +40,7 @@ function App() {
   }
 
   return (
-    <div className="app bg-slate-800 min-h-screen">
-      {currentPage === 'login' && (
-        <Login 
-          onBackToSignUp={handleGoToSignUp}
-          onLoginSuccess={handleLoginSuccess}
-        />
-      )}
-      
-      {currentPage === 'signup' && (
-        <SignUp 
-          onSignUpSuccess={handleSignUpSuccess}
-          onBackToLogin={handleBackToLogin}
-        />
-      )}
-      
-      {currentPage === 'dashboard' && (
-        <Dashboard 
-          domainName={getUserDomain()}
-          onLogout={handleLogout}
-        />
-      )}
+
     </div>
   )
 }

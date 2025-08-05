@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { Link, useNavigate } from 'react-router';
 
 const Login = ({ onBackToSignUp }) => {
   const [loginData, setLoginData] = useState({
     email: '',
     password: ''
-  });
+  }); 
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setLoginData({
@@ -13,13 +15,28 @@ const Login = ({ onBackToSignUp }) => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+    const res = await fetch('http://localhost:8090/api/collections/users/auth-with-password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        identity: loginData.email,
+        password: loginData.password
+      })
+    });
 
-    if (loginData.email === userData.email && loginData.password === userData.password) {
-      alert(`Welcome back, ${userData.firstName || userData.name || 'User'}!`);
+    if (res.ok) {
+      const data = await res.json();
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('userData', JSON.stringify(data.record));
+
+      console.log('Login successful:', data);
+      navigate('/dashboard');   
+
     } else {
       alert('Invalid email or password!');
     }
@@ -79,8 +96,17 @@ const Login = ({ onBackToSignUp }) => {
               </button>
             </form>
 
-            <p className="text-center text-gray-600 mt-6">
+            <div className='flex items-center justify-center mt-6'>
+              <p className="text-center text-gray-600">
               Don't have an account?
+
+            </p>
+
+            <Link
+                to="/signup"
+                className="text-slate-800 hover:text-slate-900 font-semibold"
+                onClick={onBackToSignUp}
+            >
               <button
                   onClick={onBackToSignUp}
                   className="text-blue-600 hover:text-blue-800 underline ml-2"
@@ -88,7 +114,8 @@ const Login = ({ onBackToSignUp }) => {
               >
                 Sign In
               </button>
-            </p>
+            </Link>
+            </div>
           </div>
         </div>
       </div>

@@ -6,10 +6,10 @@ const SignIn = ({ onSignInSuccess }) => {
     lastName: '',
     email: '',
     number: '',
-    year: '',
+    role: '',
     domain: '',
     password: '',
-    confirmPassword: ''
+    passwordConfirm: ''
   });
 
   const handleChange = (e) => {
@@ -19,20 +19,41 @@ const SignIn = ({ onSignInSuccess }) => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (formData.password !== formData.confirmPassword) {
+    if (formData.password !== formData.passwordConfirm) {
       alert('Passwords do not match!');
       return;
     }
 
+    const res = await fetch('http://localhost:8090/api/collections/users/records', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(formData)
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      localStorage.setItem('userData', JSON.stringify(data));
+      onSignInSuccess();
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('userData', JSON.stringify(data.record));
+      console.log('Sign in successful:', data);
+      alert('Sign in successful!');
+    
+    } else {
+      alert('Sign in failed!');
+    }
+
     if (
-        !formData.firstName ||
+        !formData.name ||
         !formData.lastName ||
         !formData.email ||
         !formData.number ||
-        !formData.year ||
+        !formData.role ||
         !formData.domain ||
         !formData.password
     ) {
@@ -105,16 +126,16 @@ const SignIn = ({ onSignInSuccess }) => {
           </div>
 
           <div>
-            <label htmlFor="year" className="block text-sm font-medium text-gray-700 mb-1">Year</label>
+            <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">Role</label>
             <select
-              id="year"
-              name="year"
-              value={formData.year}
+              id="role"
+              name="role"
+              value={formData.role}
               onChange={handleChange}
               className="w-full px-4 py-3 border-2  border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
               required
             >
-              <option value="">Select Year</option>
+              <option value="">Select Role</option>
               <option value="1st Year">1st Year</option>
               <option value="2nd Year">2nd Year</option>
               <option value="3rd Year">3rd Year</option>
@@ -133,10 +154,10 @@ const SignIn = ({ onSignInSuccess }) => {
               required
             >
               <option value="">Select Domain</option>
-              <option value="WebD">Web Development</option>
+              <option value="Web Development">Web Development</option>
               <option value="Video Editing">Video Editing</option>
               <option value="Graphic Designing">Graphic Designing</option>
-              <option value="Content">Content Writing</option>
+              <option value="Content Writing">Content Writing</option>
             </select>
           </div>
 
@@ -144,7 +165,7 @@ const SignIn = ({ onSignInSuccess }) => {
             <div className="flex flex-col w-full">
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
               <input
-                type="password"
+                type="text"
                 id="password"
                 name="password"
                 value={formData.password}
@@ -155,12 +176,12 @@ const SignIn = ({ onSignInSuccess }) => {
             </div>
 
             <div className="flex flex-col w-full">
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+              <label htmlFor="passwordConfirm" className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
               <input
-                type="password"
-                id="confirmPassword"
-                name="confirmPassword"
-                value={formData.confirmPassword}
+                type="text"
+                id="passwordConfirm"
+                name="passwordConfirm"
+                value={formData.passwordConfirm}
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"

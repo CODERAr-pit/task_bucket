@@ -1,1 +1,8 @@
 node_modules/
+pb_data/
+dist/
+.env
+.DS_Store
+.vscode/
+*.log
+*.env.local    

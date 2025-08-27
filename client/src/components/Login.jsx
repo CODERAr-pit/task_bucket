@@ -18,28 +18,31 @@ const Login = ({ onBackToSignUp }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const res = await fetch('http://localhost:8090/api/collections/users/auth-with-password', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        identity: loginData.email,
-        password: loginData.password
-      })
-    });
+  const res = await fetch('http://localhost:8000/api/auth/login', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  credentials: 'include',
+  body: JSON.stringify({
+    email: loginData.email,
+    password: loginData.password
+  })
+});
 
-    if (res.ok) {
-      const data = await res.json();
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('userData', JSON.stringify(data.record));
+   if (res.ok) {
+  const data = await res.json();
+  localStorage.setItem('accessToken', data.accessToken);
+  localStorage.setItem('refreshToken', data.refreshToken);
+  localStorage.setItem('userData', JSON.stringify(data.user));
 
-      console.log('Login successful:', data);
-      navigate('/dashboard');   
+  console.log('Login successful:', data);
+  navigate('/dashboard');   
 
-    } else {
-      alert('Invalid email or password!');
-    }
+} else {
+  const error = await res.json();
+  alert(error.message || 'Invalid email or password!');
+}
   };
 
   return (

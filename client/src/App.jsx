@@ -2,20 +2,25 @@ import SignUp from './components/SignIn'
 import Login from './components/Login'
 import Dashboard from './components/Dashboard'
 import CreateTaskForm from './components/TaskForm'
+import ProtectedRoute from './components/ProtectedRoute'
 import './App.css'
 import {createBrowserRouter, RouterProvider} from 'react-router-dom'
 import {TaskProvider} from "./context/TaskContext.jsx";
 
 const DashboardWithProvider = () => (
-    <TaskProvider>
-      <Dashboard />
-    </TaskProvider>
+    <ProtectedRoute>
+      <TaskProvider>
+        <Dashboard />
+      </TaskProvider>
+    </ProtectedRoute>
 );
 
 const TaskFormWithProvider = () => (
-    <TaskProvider>
-      <CreateTaskForm />
-    </TaskProvider>
+    <ProtectedRoute>
+      <TaskProvider>
+        <CreateTaskForm />
+      </TaskProvider>
+    </ProtectedRoute>
 );
 
 const router = createBrowserRouter([

@@ -14,12 +14,14 @@ export const useTaskContext = () => {
 export const TaskProvider = ({ children }) => {
     const [selectedDomain, setSelectedDomain] = useState('General');
     const [tasks, setTasks] = useState([]);
+        const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
     const location = useLocation();
 
     const domains = ['Web Development', 'Content Writing', 'Graphic Designing', 'Video Editing'];
 
     const domainMap = {
-        'Web Development': 'WebD',
+        'Web Development': 'Web Development',
         'Content Writing': 'Content Writing',
         'Graphic Designing': 'Graphic Designing',
         'Video Editing': 'Video Editing'
@@ -47,7 +49,7 @@ export const TaskProvider = ({ children }) => {
     // Auto-update domain based on route
     useEffect(() => {
         const domainFromRoute = routeToDomainMap[location.pathname];
-        if (domainFromRoute && domainFromRoute !== selectedDomain) {
+        if (domainFromRoute && domainFromRoute !== selectedDomain && !selectedDomain.startsWith('filter:')) {
             console.log('Auto-updating domain from route:', location.pathname, '->', domainFromRoute);
             setSelectedDomain(domainFromRoute);
         }
@@ -73,14 +75,59 @@ export const TaskProvider = ({ children }) => {
         }));
     };
 
-    // Get filtered tasks based on selected domain
+    // Get filtered tasks based on selected domain or filter
     const getFilteredTasks = (allTasks = tasks) => {
+        // Handle special filter types
+        if (selectedDomain.startsWith('filter:')) {
+            const filterType = selectedDomain.replace('filter:', '');
+            const currentUser = getCurrentUser();
+            
+            console.log(`Filtering by ${filterType} for user:`, currentUser._id || currentUser.id);
+            
+            if (filterType === 'assigned') {
+                const filtered = allTasks.filter(task => {
+                    // Check if current user ID is in the assignedTo array
+                    if (Array.isArray(task.assignedTo)) {
+                        return task.assignedTo.includes(currentUser._id) || 
+                               task.assignedTo.includes(currentUser.id);
+                    }
+                    // Handle single assignee case
+                    return task.assignedTo === currentUser._id || 
+                           task.assignedTo === currentUser.id;
+                });
+                console.log(`Found ${filtered.length} assigned tasks`);
+                return filtered;
+                
+            } else if (filterType === 'created') {
+                const filtered = allTasks.filter(task => {
+                    // Check if current user created the task
+                    return task.taskMaker === currentUser._id || 
+                           task.taskMaker === currentUser.id;
+                });
+                console.log(`Found ${filtered.length} created tasks`);
+                return filtered;
+            }
+        }
+        
+        // Handle regular domain filtering
         if (selectedDomain === 'General') {
             return allTasks;
         }
 
         const mappedDomain = domainMap[selectedDomain];
         return allTasks.filter(task => task.domain === mappedDomain);
+    };
+
+    // Get current user data
+    const getCurrentUser = () => {
+        try {
+            const userData = localStorage.getItem('userData');
+            const user = userData ? JSON.parse(userData) : { _id: null, email: null };
+            return user;
+        } catch (error) {
+            console.error('Error parsing user data:', error);
+            return { _id: null, email: null };
+        }
     };
 
     // Get task count for a specific domain
@@ -115,6 +162,148 @@ export const TaskProvider = ({ children }) => {
 
         return stats;
     };
+        // Helper function to get auth headers
+    const getAuthHeaders = () => {
+        const token = localStorage.getItem('accessToken');
+        return {
+            'Content-Type': 'application/json',
+            'Authorization': token ? `Bearer ${token}` : '',
+        };
+    };
+
+    // API Functions
+    const fetchTasks = async (filters = {}) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const queryParams = new URLSearchParams();
+            Object.entries(filters).forEach(([key, value]) => {
+                if (value !== null && value !== undefined && value !== '') {
+                    queryParams.append(key, value);
+                }
+            });
+            
+            const queryString = queryParams.toString();
+            const url = queryString 
+                ? `http://localhost:8000/api/tasks?${queryString}` 
+                : 'http://localhost:8000/api/tasks';
+            
+            const response = await fetch(url, {
+                credentials: 'include',
+                headers: getAuthHeaders(),
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Failed to fetch tasks: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            const tasksArray = data.items || data.tasks || data;
+            console.log('Fetched tasks:', tasksArray.length);
+            setTasks(tasksArray);
+            return data;
+        } catch (err) {
+            setError(err.message);
+            console.error('Error fetching tasks:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const createTask = async (taskData) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await fetch('http://localhost:8000/api/tasks', {
+                method: 'POST',
+                credentials: 'include',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(taskData),
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `Failed to create task: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            const newTask = result.data || result; // Backend returns {message, data}
+            setTasks(prev => [...prev, newTask]);
+            return newTask;
+        } catch (err) {
+            setError(err.message);
+            console.error('Error creating task:', err);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const updateTask = async (id, taskData) => {
+        console.log('TaskContext: Updating task', id, 'with data:', taskData);
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await fetch(`http://localhost:8000/api/tasks/${id}`, {
+                method: 'PUT',
+                credentials: 'include',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(taskData),
+            });
+            
+            console.log('TaskContext: Update response status:', response.status);
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('TaskContext: Update failed:', errorData);
+                throw new Error(errorData.error || `Failed to update task: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            console.log('TaskContext: Update result:', result);
+            const updatedTask = result.data || result; // Backend returns {message, data}
+            setTasks(prev => prev.map(task => (task.id === id || task._id === id) ? updatedTask : task));
+            console.log('TaskContext: Task updated in state');
+            return updatedTask;
+        } catch (err) {
+            setError(err.message);
+            console.error('Error updating task:', err);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const deleteTask = async (id) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await fetch(`http://localhost:8000/api/tasks/${id}`, {
+                method: 'DELETE',
+                credentials: 'include',
+                headers: getAuthHeaders(),
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `Failed to delete task: ${response.status}`);
+            }
+            
+            setTasks(prev => prev.filter(task => task.id !== id && task._id !== id));
+            return true;
+        } catch (err) {
+            setError(err.message);
+            console.error('Error deleting task:', err);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Initial data fetch
+    useEffect(() => {
+        fetchTasks();
+    }, []);
 
     const value = {
         selectedDomain,
@@ -124,6 +313,12 @@ export const TaskProvider = ({ children }) => {
         domainMap,
         tasks,
         setTasks,
+           fetchTasks,
+        createTask,
+        updateTask,
+        deleteTask,
+        loading,
+error,
         getFilteredTasks,
         getTaskCountForDomain,
         isDomainSelected,
@@ -131,6 +326,7 @@ export const TaskProvider = ({ children }) => {
         getDomainStats,
         routeToDomainMap,
         domainToRouteMap,
+        getCurrentUser,
     };
 
     return (

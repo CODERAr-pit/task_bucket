@@ -1,135 +1,3 @@
-// import React from 'react';
-// import TaskCard from "../ui/card.jsx";
-// import Navbar from "../ui/Navbar.jsx";
-// import {useTaskContext} from "../context/TaskContext";
-// import {Plus} from "lucide-react";
-// import {Link} from "react-router";
-
-// const Dashboard = ({ domainName = "example.com" }) => {
-//   const { selectedDomain, domainMap } = useTaskContext();
-
-//   console.log('Dashboard render - selectedDomain:', selectedDomain);
-
-//   const sampleTasks = [
-//     {
-//       id: 1,
-//       title: "Complete project management project",
-//       description: "Create a basic and prototype for the project management application with task tracking and user management",
-//       taskMaker: "Subhadip",
-//       assignedTo: "xyz",
-//       createdAt: "2025-01-15T10:30:00Z",
-//       dueDate: "2025-01-22T17:00:00Z",
-//       domain: "WebD",
-//       status: "in-progress"
-//     },
-//     {
-//       id: 2,
-//       title: "Fix login bug",
-//       description: "Resolve the authentication issue where users can't log in with special characters in password",
-//       taskMaker: "Suyash",
-//       assignedTo: "xyz",
-//       createdAt: "2024-01-10T14:20:00Z",
-//       dueDate: "2024-01-18T12:00:00Z",
-//       domain: "WebD",
-//       status: "completed"
-//     },
-//     {
-//       id: 3,
-//       title: "Update homepage design",
-//       description: "Implement the new homepage layout with modern UI components",
-//       taskMaker: "Arpit",
-//       assignedTo: "xyz",
-//       createdAt: "2024-01-08T09:15:00Z",
-//       dueDate: "2024-01-12T16:30:00Z",
-//       domain: "Graphic Designing",
-//       status: "overdue"
-//     },
-//     {
-//       id: 4,
-//       title: "Create promotional video",
-//       description: "Edit and produce a 2-minute promotional video for the new product launch",
-//       taskMaker: "John",
-//       assignedTo: "Sarah",
-//       createdAt: "2025-01-20T11:00:00Z",
-//       dueDate: "2025-01-30T15:00:00Z",
-//       domain: "Video Editing",
-//       status: "pending"
-//     },
-//     {
-//       id: 5,
-//       title: "Write blog articles",
-//       description: "Create engaging blog content for the company website to improve SEO",
-//       taskMaker: "Emily",
-//       assignedTo: "Mike",
-//       createdAt: "2025-01-18T13:30:00Z",
-//       dueDate: "2025-01-25T17:00:00Z",
-//       domain: "Content Writing",
-//       status: "in-progress"
-//     },
-//     {
-//       id: 6,
-//       title: "Mobile app wireframes",
-//       description: "Design wireframes and user flow for the mobile application",
-//       taskMaker: "Alex",
-//       assignedTo: "Jordan",
-//       createdAt: "2025-01-12T10:00:00Z",
-//       dueDate: "2025-01-28T16:00:00Z",
-//       domain: "Graphic Designing",
-//       status: "pending"
-//     }
-//   ];
-
-//   const filteredTasks = selectedDomain === 'General'
-//       ? sampleTasks
-//       : sampleTasks.filter(task => task.domain === domainMap[selectedDomain]);
-
-//   console.log('Filtered tasks:', filteredTasks.length);
-
-//   return (
-//       <div className="min-h-screen bg-gray-50">
-//         <Navbar />
-
-//         <div className="max-w-[1700px] mx-auto px-4 py-6">
-//           <div className="mb-4 flex flex-row justify-between items-center">
-//             <div>
-//               <h2 className="text-l sm:text-xl font-semibold text-gray-700">
-//                 {selectedDomain === 'General' ? 'All Tasks' : `${selectedDomain} Tasks`}
-//               </h2>
-//               <p className="text-gray-500">
-//                 Showing {filteredTasks.length} task{filteredTasks.length !== 1 ? 's' : ''}
-//               </p>
-//             </div>
-//             <div>
-//               <Link to="/tasks">
-//                 <button className="bg-black/80 hover:bg-black text-white w-full py-2 px-3 rounded-lg font-medium text-sm transition-all duration-200 hover:shadow-md flex items-center justify-center gap-1">
-//                   <Plus size={20}/>
-//                   Create New Task
-//                 </button>
-//               </Link>
-//             </div>
-//           </div>
-
-//           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-//             {filteredTasks.length > 0 ? (
-//                 filteredTasks.map(task => (
-//                     <div key={task.id} className="h-96">
-//                       <TaskCard task={task} />
-//                     </div>
-//                 ))
-//             ) : (
-//                 <div className="col-span-full text-center py-12">
-//                   <p className="text-gray-500 text-lg">
-//                     No tasks found for {selectedDomain}
-//                   </p>
-//                 </div>
-//             )}
-//           </div>
-//         </div>
-//       </div>
-//   );
-// };
-
-// export default Dashboard;
 
 import React, { useEffect, useState } from 'react';
 import TaskCard from "../ui/card.jsx";
@@ -243,6 +111,7 @@ const Dashboard = ({ domainName = "" }) => {
 
   return (
       <div className="min-h-screen bg-bg-primary">
+        {console.log('[Dashboard] Rendering TaskDetailsModal. showTaskDetails:', showTaskDetails, 'selectedTask:', selectedTask)}
         <Navbar />
 
         <div className="max-w-[1700px] mx-auto px-4 py-6">
@@ -343,16 +212,18 @@ const Dashboard = ({ domainName = "" }) => {
         </div>
         
         {/* Task Details Modal */}
-        <TaskDetailsModal
-          task={selectedTask}
-          isOpen={showTaskDetails}
-          onClose={() => {
-            setShowTaskDetails(false);
-            setSelectedTask(null);
-          }}
-          onUpdate={handleEditTask}
-          onDelete={handleDeleteTask}
-        />
+        {showTaskDetails && (
+          <TaskDetailsModal
+            task={selectedTask}
+            isOpen={true}
+            onClose={() => {
+              setShowTaskDetails(false);
+              setSelectedTask(null);
+            }}
+            onUpdate={handleEditTask}
+            onDelete={handleDeleteTask}
+          />
+        )}
 
         {/* Edit Task Modal */}
         <EditTaskModal

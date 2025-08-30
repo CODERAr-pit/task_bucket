@@ -15,7 +15,8 @@ export const fetchTaskPermissions = async (taskId) => {
         const authToken = localStorage.getItem('token') || localStorage.getItem('accessToken');
         console.log('Using token for permissions:', authToken ? 'Token found' : 'No token');
 
-        const response = await fetch(`http://localhost:8000/api/tasks/${taskId}/permissions`, {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        const response = await fetch(`${apiUrl}/api/tasks/${taskId}/permissions`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${authToken}`,

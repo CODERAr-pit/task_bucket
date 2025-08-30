@@ -214,7 +214,8 @@ export const TaskProvider = ({ children }) => {
         setLoading(true);
         setError(null);
         try {
-            const response = await fetch('http://localhost:8000/api/tasks', {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+            const response = await fetch(`${apiUrl}/api/tasks`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: getAuthHeaders(),
@@ -244,7 +245,8 @@ export const TaskProvider = ({ children }) => {
         setLoading(true);
         setError(null);
         try {
-            const response = await fetch(`http://localhost:8000/api/tasks/${id}`, {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+            const response = await fetch(`${apiUrl}/api/tasks/${id}`, {
                 method: 'PUT',
                 credentials: 'include',
                 headers: getAuthHeaders(),
@@ -278,7 +280,8 @@ export const TaskProvider = ({ children }) => {
         setLoading(true);
         setError(null);
         try {
-            const response = await fetch(`http://localhost:8000/api/tasks/${id}`, {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+            const response = await fetch(`${apiUrl}/api/tasks/${id}`, {
                 method: 'DELETE',
                 credentials: 'include',
                 headers: getAuthHeaders(),

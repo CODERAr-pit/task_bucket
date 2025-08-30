@@ -1,6 +1,7 @@
 import express from "express";
 import { User } from "../models/User.js";
 import jwt from "jsonwebtoken";
+import { sendNewUserNotificationToAdmins } from "../services/emailService.js";
 
 const router = express.Router();
 
@@ -57,13 +58,22 @@ router.post("/register", async (req, res) => {
     // Return user data without password
     const { password: pwd, refreshToken: rt, ...userWithoutPassword } = user.toObject(); 
 
+    // Send notification to admins
+    try {
+      await sendNewUserNotificationToAdmins(user.name, user.email, user._id);
+      console.log('Admin notification sent successfully for new user:', user.email);
+    } catch (emailError) {
+      console.error('Failed to send admin notification:', emailError);
+      // Continue with registration even if email fails
+    }
+
     res.status(201).json({
       success: true,
-      message: "User registered successfully",
-      
+      message: "User registered successfully. Awaiting admin approval.",
       user: userWithoutPassword,
       accessToken,
-        refreshToken
+      refreshToken,
+      pendingApproval: true
     });
   } catch (error) {
     console.error("Registration error:", error);
@@ -103,6 +113,23 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({
         success: false,
         message: "Invalid email or password",
+      });
+    }
+
+    // Check user approval status
+    if (user.status === 'pending') {
+      return res.status(403).json({
+        success: false,
+        message: "Your account is pending admin approval. Please wait for approval.",
+        status: 'pending'
+      });
+    }
+
+    if (user.status === 'rejected') {
+      return res.status(403).json({
+        success: false,
+        message: "Your account has been rejected. Please contact support.",
+        status: 'rejected'
       });
     }
 

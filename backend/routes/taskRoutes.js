@@ -7,6 +7,15 @@ import { getTaskById } from '../controllers/view.controller.js';
 import { createTask } from '../controllers/create.controller.js';
 import { updateTask } from '../controllers/update.controller.js';
 import { deleteTask, bulkDeleteTasks } from '../controllers/delete.controller.js';
+import { addComment, getComments } from '../controllers/comment.controller.js';
+
+const router = express.Router();
+
+// Add a comment to a task
+router.post('/:taskId/comments', authenticate, addComment);
+
+// Get all comments for a task
+router.get('/:taskId/comments', authenticate, getComments);
 import { subscribeToTaskChanges, subscribeToTaskById, getSSEInfo } from '../controllers/realtime.controller.js';
 import { getUsersInDomain, getUsersFiltered, getFilterOptions } from '../controllers/users.controller.js';
 import { getTaskPermissions } from '../controllers/permissions.controller.js';
@@ -17,10 +26,7 @@ import {
     batchDeleteTasks 
 } from '../controllers/batch.controller.js';
 
-const router = express.Router();
-
-// GET USERS IN DOMAIN (for task assignment)
-router.get('/users', authenticate, getUsersInDomain);
+// ...existing code...
 
 // GET FILTERED USERS (for domain-specific assignment)
 router.get('/users/filtered', authenticate, getUsersFiltered);

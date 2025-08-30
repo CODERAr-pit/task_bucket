@@ -1,5 +1,6 @@
 import { Task } from "../models/Task.js";
 import { User } from "../models/User.js";
+import { sendTaskAssignmentEmail } from "../services/emailService.js";
 
 // Create new task
 const createTask = async (req, res) => {
@@ -130,6 +131,42 @@ const createTask = async (req, res) => {
         }
 
         const task = await query.exec();
+
+        // Send assignment notifications
+        if (taskData.assignedTo && taskData.assignedTo.length > 0) {
+            try {
+                const assignedUsers = await User.find({ _id: { $in: taskData.assignedTo } });
+                const taskMaker = await User.findById(taskData.taskMaker);
+                
+                console.log(`Sending task assignment emails to ${assignedUsers.length} users...`);
+                
+                for (const assignedUser of assignedUsers) {
+                    try {
+                        await sendTaskAssignmentEmail(
+                            assignedUser.email,
+                            assignedUser.name,
+                            taskData.title,
+                            taskData.description,
+                            taskData.dueDate,
+                            taskMaker ? taskMaker.name : 'System'
+                        );
+                        console.log(`Assignment email sent to: ${assignedUser.email}`);
+                    } catch (emailError) {
+                        console.error(`Failed to send assignment email to ${assignedUser.email}:`, emailError);
+                    }
+                }
+                
+                // Mark notifications as sent
+                await Task.findByIdAndUpdate(newTask._id, {
+                    'notifications.assigned': true
+                });
+                
+                console.log('Task assignment notifications completed');
+            } catch (emailError) {
+                console.error('Error in task assignment notification process:', emailError);
+                // Don't fail task creation if emails fail
+            }
+        }
 
         res.status(201).json({
             message: 'Task created successfully',

@@ -49,7 +49,8 @@ const EditTaskModal = ({ isOpen, onClose, task, permissions }) => {
     setLoadingUsers(true);
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://localhost:8000/api/tasks/users', {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiUrl}/api/tasks/users`, {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
@@ -275,6 +276,7 @@ const EditTaskModal = ({ isOpen, onClose, task, permissions }) => {
               </div>
             )}
           </div>
+          
 
           {/* Assignees - Only editable by seniors or if no permissions loaded yet */}
           {(canUserEditTask(permissions) || !permissions) && (

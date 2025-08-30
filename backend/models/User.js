@@ -42,6 +42,24 @@ const userSchema = new Schema({
     verified: {
         type: Boolean,
         default: false
+    },
+    status: {
+        type: String,
+        enum: ['pending', 'active', 'rejected'],
+        default: 'pending'
+    },
+    isAdmin: {
+        type: Boolean,
+        default: false
+    },
+    approvedBy: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        default: null
+    },
+    approvedAt: {
+        type: Date,
+        default: null
     }
 }, {
     timestamps: true // This adds createdAt and updatedAt automatically

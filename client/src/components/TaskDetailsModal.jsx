@@ -1,7 +1,87 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, Calendar, Clock, User, Tag, AlertCircle, FileText } from 'lucide-react';
 
 const TaskDetailsModal = ({ task, isOpen, onClose, onUpdate, onDelete }) => {
+  const [comments, setComments] = useState([]);
+  const [loadingComments, setLoadingComments] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const [addingComment, setAddingComment] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (isOpen && (task?._id || task?.id)) {
+      fetchComments();
+    }
+  }, [isOpen, task?._id, task?.id]);
+
+  const fetchComments = async () => {
+    const taskId = task?._id ? task._id : task?.id;
+    if (!task || !taskId) {
+      alert('No valid task ID found.');
+      return;
+    }
+    setLoadingComments(true);
+    setError(null);
+    try {
+      const token = localStorage.getItem('accessToken');
+      console.log('[Comments] Fetching comments for task:', taskId, 'with token:', token);
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const res = await fetch(`${apiUrl}/api/tasks/${taskId}/comments`, {
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
+      });
+      console.log('[Comments] Response status:', res.status);
+      if (!res.ok) throw new Error('Failed to fetch comments');
+      const data = await res.json();
+      console.log('[Comments] Data received:', data);
+      setComments(data.comments || data);
+    } catch (err) {
+      console.error('[Comments] Error fetching comments:', err);
+      setError('Could not load comments');
+    } finally {
+      setLoadingComments(false);
+    }
+  };
+
+  const handleAddComment = async () => {
+    console.log('[Comments] handleAddComment called. isOpen:', isOpen, 'commentText:', commentText, 'task:', task);
+    const taskId = task?._id ? task._id : task?.id;
+    if (!isOpen) {
+      alert('Cannot post comment: modal is not open.');
+      return;
+    }
+    if (!commentText.trim() || !task || !taskId) {
+      alert('Cannot post comment: invalid comment or task.');
+      return;
+    }
+    setAddingComment(true);
+    setError(null);
+    try {
+      const token = localStorage.getItem('accessToken');
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const res = await fetch(`${apiUrl}/api/tasks/${taskId}/comments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
+        body: JSON.stringify({ text: commentText }),
+      });
+      if (!res.ok) {
+        const errorText = await res.text();
+        alert('Failed to add comment: ' + errorText);
+        throw new Error('Failed to add comment');
+      }
+      setCommentText('');
+      await fetchComments();
+    } catch (err) {
+      console.error('[Comments] Error posting comment:', err);
+      setError('Could not add comment');
+    } finally {
+      setAddingComment(false);
+    }
+  };
   if (!isOpen || !task) return null;
 
   const formatDate = (dateString) => {
@@ -77,7 +157,7 @@ const TaskDetailsModal = ({ task, isOpen, onClose, onUpdate, onDelete }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
-      <div className="bg-bg-card rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-border-primary">
+      <div className="bg-bg-card rounded-2xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-scroll scrollbar-hide  border border-border-primary">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border-primary">
           <div>
@@ -112,7 +192,6 @@ const TaskDetailsModal = ({ task, isOpen, onClose, onUpdate, onDelete }) => {
               </div>
             </div>
           </div>
-
           {/* Description */}
           {task.description && (
             <div>
@@ -125,7 +204,6 @@ const TaskDetailsModal = ({ task, isOpen, onClose, onUpdate, onDelete }) => {
               </p>
             </div>
           )}
-
           {/* Domain */}
           {task.domain && (
             <div>
@@ -138,7 +216,6 @@ const TaskDetailsModal = ({ task, isOpen, onClose, onUpdate, onDelete }) => {
               </span>
             </div>
           )}
-
           {/* People */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {task.taskMakerName && (
@@ -158,7 +235,6 @@ const TaskDetailsModal = ({ task, isOpen, onClose, onUpdate, onDelete }) => {
                 </div>
               </div>
             )}
-
             {task.assignedToName && (
               <div>
                 <div className="flex items-center gap-2 mb-2">
@@ -170,7 +246,6 @@ const TaskDetailsModal = ({ task, isOpen, onClose, onUpdate, onDelete }) => {
                     }
                   </span>
                 </div>
-                
                 {/* Handle multiple assignees */}
                 {Array.isArray(task.assignedToName) ? (
                   <div className="space-y-2">
@@ -203,7 +278,6 @@ const TaskDetailsModal = ({ task, isOpen, onClose, onUpdate, onDelete }) => {
               </div>
             )}
           </div>
-
           {/* Dates */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {task.createdAt && (
@@ -217,7 +291,6 @@ const TaskDetailsModal = ({ task, isOpen, onClose, onUpdate, onDelete }) => {
                 </p>
               </div>
             )}
-
             {task.dueDate && (
               <div>
                 <div className="flex items-center gap-2 mb-2">
@@ -232,6 +305,54 @@ const TaskDetailsModal = ({ task, isOpen, onClose, onUpdate, onDelete }) => {
                 </div>
               </div>
             )}
+          </div>
+          {/* Comments Section - always at bottom, always rendered */}
+          <div className="mt-8">
+            <h3 className="text-lg font-semibold mb-2 text-text-heading">Discussion Thread</h3>
+            <div className="bg-bg-primary rounded-lg border border-border-primary p-4">
+              {loadingComments ? (
+                <div className="text-text-muted">Loading comments...</div>
+              ) : error ? (
+                <div className="text-status-declined">{error}</div>
+              ) : comments.length === 0 ? (
+                <div className="text-text-muted">No comments yet.</div>
+              ) : (
+                <ul className="space-y-4">
+                  {comments.map((comment, idx) => (
+                    <li key={comment._id || idx} className="border-b border-border-primary pb-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full bg-blue-400/30 flex items-center justify-center font-bold text-blue-700">
+                          {comment.user?.name?.charAt(0).toUpperCase() || comment.user?.email?.charAt(0).toUpperCase() || '?'}
+                        </div>
+                        <div>
+                          <span className="font-medium text-text-heading">{comment.user?.name || comment.user?.email || 'User'}</span>
+                          <span className="ml-2 text-xs text-text-muted">{new Date(comment.createdAt).toLocaleString()}</span>
+                        </div>
+                      </div>
+                      <div className="mt-1 text-text-body">{comment.text}</div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <div className="mt-4 flex gap-2">
+                <input
+                  type="text"
+                  className="flex-1 border border-border-primary rounded-lg px-3 py-2 text-text-body bg-bg-card"
+                  placeholder="Add a comment..."
+                  value={commentText}
+                  onChange={e => setCommentText(e.target.value)}
+                  disabled={addingComment}
+                />
+                <button
+                  type="button"
+                  onClick={handleAddComment}
+                  className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+                  disabled={addingComment || !commentText.trim()}
+                >
+                  {addingComment ? 'Posting...' : 'Post'}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 

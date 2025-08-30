@@ -3,6 +3,7 @@ import Login from './components/Login'
 import Dashboard from './components/Dashboard'
 import CreateTaskForm from './components/TaskForm'
 import ProtectedRoute from './components/ProtectedRoute'
+import AdminDashboard from './components/AdminDashboard'
 import './App.css'
 import {createBrowserRouter, RouterProvider} from 'react-router-dom'
 import {TaskProvider} from "./context/TaskContext.jsx";
@@ -19,6 +20,14 @@ const TaskFormWithProvider = () => (
     <ProtectedRoute>
       <TaskProvider>
         <CreateTaskForm />
+      </TaskProvider>
+    </ProtectedRoute>
+);
+
+const AdminDashboardWithProvider = () => (
+    <ProtectedRoute requireAdmin={true}>
+      <TaskProvider>
+        <AdminDashboard />
       </TaskProvider>
     </ProtectedRoute>
 );
@@ -55,6 +64,14 @@ const router = createBrowserRouter([
   {
     path: "/tasks",
     element: <TaskFormWithProvider />,
+  },
+  {
+    path: "/admin",
+    element: <AdminDashboardWithProvider />,
+  },
+  {
+    path: "/admin/:userId?",
+    element: <AdminDashboardWithProvider />,
   },
 ]);
 

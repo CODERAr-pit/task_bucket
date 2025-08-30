@@ -97,7 +97,8 @@ const Navbar = () => {
     const handleLogout = async () => {
         try {
             // Call logout API
-            const response = await fetch('http://localhost:8000/api/auth/logout', {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+            const response = await fetch(`${apiUrl}/api/auth/logout`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
@@ -359,6 +360,20 @@ const Navbar = () => {
                                         <p className="text-xs text-text-muted">{user.email}</p>
                                         <p className="text-xs text-badge-academic font-medium">{user.role}</p>
                                     </div>
+
+                                    {/* Admin Dashboard Link - Show only for admins */}
+                                    {user.isAdmin && (
+                                        <div className="py-2 border-b border-border-primary">
+                                            <Link
+                                                to="/admin"
+                                                onClick={() => setDropdownOpen(false)}
+                                                className="flex items-center gap-3 w-full px-4 py-2 text-sm text-badge-academic hover:bg-badge-academic/10 transition-colors duration-150"
+                                            >
+                                                <Settings className="w-4 h-4" />
+                                                Admin Dashboard
+                                            </Link>
+                                        </div>
+                                    )}
 
                                     {/* Only Logout Button */}
                                     <div className="py-2">

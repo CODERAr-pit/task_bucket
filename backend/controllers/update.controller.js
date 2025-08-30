@@ -2,6 +2,7 @@ import { Task } from "../models/Task.js";
 import { User } from "../models/User.js";
 import { canEditTask, canUpdateTaskStatus } from "../utils/permissions.js";
 import { canViewTask } from "../utils/visibility.js";
+import { sendTaskAssignmentEmail } from "../services/emailService.js";
 
 // Update existing task
 const updateTask = async (req, res) => {
@@ -198,12 +199,48 @@ const updateTask = async (req, res) => {
             updateData.visibility = visibility;
         }
 
-        // Perform update
         const updatedTask = await Task.findByIdAndUpdate(
             id,
             { $set: updateData },
             { new: true, runValidators: true }
         );
+
+        // Send notifications for newly assigned users
+        if (assignedTo !== undefined && updateData.assignedTo && updateData.assignedTo.length > 0) {
+            try {
+                const originalAssignedIds = existingTask.assignedTo.map(id => id.toString());
+                const newAssignedIds = updateData.assignedTo.map(id => id.toString());
+                
+                // Find newly assigned users (users who weren't assigned before)
+                const newlyAssignedIds = newAssignedIds.filter(id => !originalAssignedIds.includes(id));
+                
+                if (newlyAssignedIds.length > 0) {
+                    console.log(`Sending assignment emails to ${newlyAssignedIds.length} newly assigned users...`);
+                    
+                    const newlyAssignedUsers = await User.find({ _id: { $in: newlyAssignedIds } });
+                    const taskMaker = await User.findById(existingTask.taskMaker);
+                    
+                    for (const user of newlyAssignedUsers) {
+                        try {
+                            await sendTaskAssignmentEmail(
+                                user.email,
+                                user.name,
+                                existingTask.title,
+                                existingTask.description,
+                                existingTask.dueDate,
+                                taskMaker ? taskMaker.name : 'System'
+                            );
+                            console.log(`Assignment email sent to newly assigned user: ${user.email}`);
+                        } catch (emailError) {
+                            console.error(`Failed to send assignment email to ${user.email}:`, emailError);
+                        }
+                    }
+                }
+            } catch (emailError) {
+                console.error('Error sending assignment notifications:', emailError);
+                // Don't fail the update if emails fail
+            }
+        }
 
         // Get updated task with populated fields
         let query = Task.findById(updatedTask._id);

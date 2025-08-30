@@ -45,6 +45,17 @@ export const requireSenior = (req, res, next) => {
     next();
 };
 
+// Middleware to check if user is an admin
+export const requireAdmin = (req, res, next) => {
+    if (!req.user.isAdmin) {
+        return res.status(403).json({
+            success: false,
+            message: 'Access denied. Admin role required.'
+        });
+    }
+    next();
+};
+
 // Middleware to check if user can access task (same domain or task creator/assignee)
 export const checkTaskAccess = async (req, res, next) => {
     try {

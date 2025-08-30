@@ -248,7 +248,7 @@ const TaskCard = ({
   const [isHover, setIsHover] = useState(false);
 
   return (
-    <div className="group bg-bg-card hover:bg-bg-card-hover rounded-2xl shadow-card hover:shadow-card-hover border border-border-primary overflow-hidden w-full mx-auto flex flex-col h-full transition-all duration-200">
+    <div className="group bg-bg-card hover:bg-bg-card-hover rounded-2xl shadow-card hover:shadow-card-hover border border-border-primary overflow-hidden w-full mx-auto flex flex-col h-full transition-all duration-200" onClick={() => onViewDetails?.(task)}>
       {/* Domain Header with Status and Actions */}
       {task.domain && (
         <div className={`${domainColors.bg} px-4 py-3 flex-shrink-0`}>

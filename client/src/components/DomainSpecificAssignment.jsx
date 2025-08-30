@@ -56,7 +56,8 @@ const DomainSpecificAssignment = ({
   const fetchFilterOptions = async () => {
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://localhost:8000/api/tasks/users/filter-options', {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiUrl}/api/tasks/users/filter-options`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -77,7 +78,8 @@ const DomainSpecificAssignment = ({
     setLoading(true);
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://localhost:8000/api/tasks/users', {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiUrl}/api/tasks/users`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -107,7 +109,8 @@ const DomainSpecificAssignment = ({
       if (filters.roles.length > 0) params.append('roles', filters.roles.join(','));
       if (filters.domains.length > 0) params.append('domains', filters.domains.join(','));
 
-      const response = await fetch(`http://localhost:8000/api/tasks/users/filtered?${params}`, {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiUrl}/api/tasks/users/filtered?${params}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

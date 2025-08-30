@@ -56,7 +56,8 @@ const SignIn = ({ onSignInSuccess }) => {
         number: formData.number
       };
 
-      const res = await fetch('http://localhost:8000/api/auth/register', {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const res = await fetch(`${apiUrl}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -84,7 +85,7 @@ const SignIn = ({ onSignInSuccess }) => {
 
   return (
     <div className="w-full max-w-[800px] px-4 py-12 mx-auto min-h-screen">
-      <div className="bg-white p-10 rounded-xl shadow-xl border border-white/80">
+      <div className="bg-white p-10 rounded-xl shadow-xl mt-20 border border-white/80">
         <h2 className="text-3xl font-semibold text-center text-gray-800 mb-8">Sign Up</h2>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex flex-col sm:flex-row justify-between gap-4">
@@ -142,13 +143,13 @@ const SignIn = ({ onSignInSuccess }) => {
           </div>
 
           <div>
-            <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+            <label htmlFor="role" className="block text-sm font-medium text-black mb-1">Role</label>
             <select
               id="role"
               name="role"
               value={formData.role}
               onChange={handleChange}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+              className="w-full px-4 py-3 border-2 border-gray-300 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
               required
             >
               <option value="">Select Role</option>
@@ -160,13 +161,13 @@ const SignIn = ({ onSignInSuccess }) => {
           </div>
 
           <div>
-            <label htmlFor="domain" className="block text-sm font-medium text-gray-700 mb-1">Domain</label>
+            <label htmlFor="domain" className="block text-sm font-medium text-black mb-1">Domain</label>
             <select
               id="domain"
               name="domain"
               value={formData.domain}
               onChange={handleChange}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-slate-900"
               required
             >
               <option value="">Select Domain</option>

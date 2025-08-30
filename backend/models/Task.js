@@ -45,7 +45,47 @@ const taskSchema = new Schema({
         type: String,
         enum: ["public", "private"],
         default: "public"
+    },
+    notifications: {
+        assigned: {
+            type: Boolean,
+            default: false
+        },
+        reminded: {
+            type: Date,
+            default: null
+        }
     }
+    ,
+    reminderStart: {
+        type: Date,
+        default: null
+    },
+    reminderEnd: {
+        type: Date,
+        default: null
+    },
+    reminderIntervalMinutes: {
+        type: Number,
+        default: 1440 // Default to daily (24*60)
+    },
+    comments: [
+        {
+            user: {
+                type: Schema.Types.ObjectId,
+                ref: 'User',
+                required: true
+            },
+            text: {
+                type: String,
+                required: true
+            },
+            createdAt: {
+                type: Date,
+                default: Date.now
+            }
+        }
+    ]
 }, {
     timestamps: true // This adds createdAt and updatedAt automatically
 });

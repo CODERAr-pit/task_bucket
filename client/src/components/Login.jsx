@@ -1,11 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router';
+import TaskNotificationPopup from './TaskNotificationPopup';
 
 const Login = ({ onBackToSignUp }) => {
   const [loginData, setLoginData] = useState({
     email: '',
     password: ''
-  }); 
+  });
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -18,7 +21,8 @@ const Login = ({ onBackToSignUp }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-  const res = await fetch('http://localhost:8000/api/auth/login', {
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  const res = await fetch(`${apiUrl}/api/auth/login`, {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json'
@@ -37,7 +41,20 @@ const Login = ({ onBackToSignUp }) => {
   localStorage.setItem('userData', JSON.stringify(data.user));
 
   console.log('Login successful:', data);
-  navigate('/dashboard');   
+  
+  // Show notification popup for regular users, redirect admins immediately
+  if (data.user.isAdmin) {
+    navigate('/admin');
+  } else {
+    setCurrentUser(data.user);
+    setShowNotifications(true);
+    // Navigate after a delay to allow notification popup to show
+    setTimeout(() => {
+      if (!showNotifications) {
+        navigate('/dashboard');
+      }
+    }, 1000);
+  }
 
 } else {
   const error = await res.json();
@@ -45,8 +62,13 @@ const Login = ({ onBackToSignUp }) => {
 }
   };
 
+  const handleNotificationClose = () => {
+    setShowNotifications(false);
+    navigate('/dashboard');
+  };
+
   return (
-      <div className="min-h-screen bg-[#0C1121] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[#00043C] flex items-center justify-center px-4">
         <div className="w-full max-w-md mx-auto">
           <div className="bg-white p-10 rounded-xl shadow-xl border border-white/80">
             <h2 className="text-3xl font-semibold text-center text-gray-800 mb-8">
@@ -121,6 +143,14 @@ const Login = ({ onBackToSignUp }) => {
             </div>
           </div>
         </div>
+        
+        {/* Task Notification Popup */}
+        {showNotifications && currentUser && (
+          <TaskNotificationPopup 
+            user={currentUser} 
+            onClose={handleNotificationClose}
+          />
+        )}
       </div>
   );
 };

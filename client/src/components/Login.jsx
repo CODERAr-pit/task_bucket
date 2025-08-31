@@ -1,11 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router';
+import TaskNotificationPopup from './TaskNotificationPopup';
 
 const Login = ({ onBackToSignUp }) => {
   const [loginData, setLoginData] = useState({
     email: '',
     password: ''
-  }); 
+  });
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -18,32 +21,54 @@ const Login = ({ onBackToSignUp }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const res = await fetch('http://localhost:8090/api/collections/users/auth-with-password', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        identity: loginData.email,
-        password: loginData.password
-      })
-    });
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  const res = await fetch(`${apiUrl}/api/auth/login`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  credentials: 'include',
+  body: JSON.stringify({
+    email: loginData.email,
+    password: loginData.password
+  })
+});
 
-    if (res.ok) {
-      const data = await res.json();
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('userData', JSON.stringify(data.record));
+   if (res.ok) {
+  const data = await res.json();
+  localStorage.setItem('accessToken', data.accessToken);
+  localStorage.setItem('refreshToken', data.refreshToken);
+  localStorage.setItem('userData', JSON.stringify(data.user));
 
-      console.log('Login successful:', data);
-      navigate('/dashboard');   
+  console.log('Login successful:', data);
+  
+  // Show notification popup for regular users, redirect admins immediately
+  if (data.user.isAdmin) {
+    navigate('/admin');
+  } else {
+    setCurrentUser(data.user);
+    setShowNotifications(true);
+    // Navigate after a delay to allow notification popup to show
+    setTimeout(() => {
+      if (!showNotifications) {
+        navigate('/dashboard');
+      }
+    }, 1000);
+  }
 
-    } else {
-      alert('Invalid email or password!');
-    }
+} else {
+  const error = await res.json();
+  alert(error.message || 'Invalid email or password!');
+}
+  };
+
+  const handleNotificationClose = () => {
+    setShowNotifications(false);
+    navigate('/dashboard');
   };
 
   return (
-      <div className="min-h-screen bg-[#0C1121] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[#00043C] flex items-center justify-center px-4">
         <div className="w-full max-w-md mx-auto">
           <div className="bg-white p-10 rounded-xl shadow-xl border border-white/80">
             <h2 className="text-3xl font-semibold text-center text-gray-800 mb-8">
@@ -118,6 +143,14 @@ const Login = ({ onBackToSignUp }) => {
             </div>
           </div>
         </div>
+        
+        {/* Task Notification Popup */}
+        {showNotifications && currentUser && (
+          <TaskNotificationPopup 
+            user={currentUser} 
+            onClose={handleNotificationClose}
+          />
+        )}
       </div>
   );
 };

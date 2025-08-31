@@ -12,6 +12,8 @@ const TaskNotificationPopup = ({ user, onClose }) => {
     }
   }, [user]);
 
+  
+
   const checkUnfinishedTasks = async () => {
     setLoading(true);
     try {

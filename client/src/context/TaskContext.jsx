@@ -184,10 +184,11 @@ export const TaskProvider = ({ children }) => {
             });
             
             const queryString = queryParams.toString();
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
             const url = queryString 
-                ? `http://localhost:8000/api/tasks?${queryString}` 
-                : 'http://localhost:8000/api/tasks';
-            
+                ? `${apiUrl}/api/tasks?${queryString}` 
+                : `${apiUrl}/api/tasks`;
+
             const response = await fetch(url, {
                 credentials: 'include',
                 headers: getAuthHeaders(),

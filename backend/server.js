@@ -43,7 +43,7 @@ import './services/cronJobs.js';
 // Middleware
 // CORS configuration
 app.use(cors({
-    origin: [process.env.CLIENT_URL || 'http://localhost:3000', process.env.CLIENT_URL || 'https://task-bucket.onrender.com'],
+    origin: [process.env.CLIENT_URL || 'http://localhost:3000', process.env.CLIENT_URL || 'https://task-bucket.vercel.app/'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']

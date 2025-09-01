@@ -15,6 +15,7 @@ const subscribeToTaskChanges = async (req, res) => {
         });
 
         const userDomain = req.user.domain;
+        const userDomains = req.user.domains || [userDomain].filter(Boolean);
         const userId = req.user._id.toString();
 
         // Send initial connection message
@@ -24,11 +25,11 @@ const subscribeToTaskChanges = async (req, res) => {
             timestamp: new Date().toISOString()
         })}\n\n`);
 
-        // Set up change stream for tasks in user's domain
+        // Set up change stream for tasks in user's domains
         const changeStream = Task.watch([
             {
                 $match: {
-                    'fullDocument.domain': userDomain
+                    'fullDocument.domain': { $in: userDomains }
                 }
             }
         ], { fullDocument: 'updateLookup' });
@@ -144,9 +145,10 @@ const subscribeToTaskById = async (req, res) => {
         }
 
         const userDomain = req.user.domain;
-        if (task.domain !== userDomain) {
+        const userDomains = req.user.domains || [userDomain].filter(Boolean);
+        if (!userDomains.includes(task.domain)) {
             return res.status(403).json({
-                error: 'You can only subscribe to tasks in your domain'
+                error: 'You can only subscribe to tasks in your domains'
             });
         }
 

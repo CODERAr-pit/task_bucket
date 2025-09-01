@@ -24,17 +24,14 @@ const TaskDetailsModal = ({ task, isOpen, onClose, onUpdate, onDelete }) => {
     setError(null);
     try {
       const token = localStorage.getItem('accessToken');
-      console.log('[Comments] Fetching comments for task:', taskId, 'with token:', token);
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
       const res = await fetch(`${apiUrl}/api/tasks/${taskId}/comments`, {
         headers: {
           'Authorization': token ? `Bearer ${token}` : '',
         },
       });
-      console.log('[Comments] Response status:', res.status);
       if (!res.ok) throw new Error('Failed to fetch comments');
       const data = await res.json();
-      console.log('[Comments] Data received:', data);
       setComments(data.comments || data);
     } catch (err) {
       console.error('[Comments] Error fetching comments:', err);
@@ -45,7 +42,6 @@ const TaskDetailsModal = ({ task, isOpen, onClose, onUpdate, onDelete }) => {
   };
 
   const handleAddComment = async () => {
-    console.log('[Comments] handleAddComment called. isOpen:', isOpen, 'commentText:', commentText, 'task:', task);
     const taskId = task?._id ? task._id : task?.id;
     if (!isOpen) {
       alert('Cannot post comment: modal is not open.');

@@ -163,15 +163,15 @@ const AdminDashboard = () => {
       const data = await response.json();
       
       if (data.success) {
-        alert(`✅ ${userName} approved successfully! They will receive a welcome email.`);
+        alert(` ${userName} approved successfully! They will receive a welcome email.`);
         fetchPendingUsers();
         fetchStats();
       } else {
-        alert(`❌ Failed to approve user: ${data.message}`);
+        alert(` Failed to approve user: ${data.message}`);
       }
     } catch (error) {
       console.error('Error approving user:', error);
-      alert('❌ Error approving user. Please try again.');
+      alert(' Error approving user. Please try again.');
     }
   };
 
@@ -194,20 +194,20 @@ const AdminDashboard = () => {
       const data = await response.json();
       
       if (data.success) {
-        alert(`✅ ${userName} rejected successfully. They will receive a rejection email.`);
+        alert(` ${userName} rejected successfully. They will receive a rejection email.`);
         fetchPendingUsers();
         fetchStats();
       } else {
-        alert(`❌ Failed to reject user: ${data.message}`);
+        alert(` Failed to reject user: ${data.message}`);
       }
     } catch (error) {
       console.error('Error rejecting user:', error);
-      alert('❌ Error rejecting user. Please try again.');
+      alert(' Error rejecting user. Please try again.');
     }
   };
 
   const deleteUser = async (userId, userName) => {
-    if (!confirm(`⚠️ Are you sure you want to DELETE ${userName}? This action cannot be undone.`)) {
+    if (!confirm(` Are you sure you want to DELETE ${userName}? This action cannot be undone.`)) {
       return;
     }
     
@@ -224,15 +224,15 @@ const AdminDashboard = () => {
       const data = await response.json();
       
       if (data.success) {
-        alert(`✅ ${userName} deleted successfully.`);
+        alert(` ${userName} deleted successfully.`);
         fetchAllUsers();
         fetchStats();
       } else {
-        alert(`❌ Failed to delete user: ${data.message}`);
+        alert(` Failed to delete user: ${data.message}`);
       }
     } catch (error) {
       console.error('Error deleting user:', error);
-      alert('❌ Error deleting user. Please try again.');
+      alert(' Error deleting user. Please try again.');
     }
   };
 
@@ -430,8 +430,14 @@ const AdminDashboard = () => {
                             <h3 className="font-medium text-text-heading">{user.name}</h3>
                             <p className="text-sm text-text-body">{user.email}</p>
                             <p className="text-sm text-text-muted">
-                              <span className="font-medium">Role:</span> {user.role} | 
-                              <span className="font-medium ml-1">Domain:</span> {user.domain}
+                              <span className="font-medium">Role:</span> {user.role}
+                            </p>
+                            <p className="text-sm text-text-muted">
+                              <span className="font-medium">Domains:</span> {
+                                user.domains && user.domains.length > 0 
+                                  ? user.domains.join(', ') 
+                                  : user.domain || 'Not specified'
+                              }
                             </p>
                             <p className="text-xs text-text-muted">
                               Registered: {formatDate(user.createdAt)}
@@ -496,8 +502,14 @@ const AdminDashboard = () => {
                           </div>
                           <p className="text-sm text-text-body">{user.email}</p>
                           <p className="text-sm text-text-muted">
-                            <span className="font-medium">Role:</span> {user.role} | 
-                            <span className="font-medium ml-1">Domain:</span> {user.domain}
+                            <span className="font-medium">Role:</span> {user.role}
+                          </p>
+                          <p className="text-sm text-text-muted">
+                            <span className="font-medium">Domains:</span> {
+                              user.domains && user.domains.length > 0 
+                                ? user.domains.join(', ') 
+                                : user.domain || 'Not specified'
+                            }
                           </p>
                           <p className="text-xs text-text-muted">
                             Registered: {formatDate(user.createdAt)}

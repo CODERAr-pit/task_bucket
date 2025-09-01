@@ -18,7 +18,7 @@ const createTransporter = () => {
 
 // Email templates
 const emailTemplates = {
-    newUserRegistration: (userName, userEmail, userId) => ({
+    newUserRegistration: (userName, userEmail, userId, userRole, userDomains) => ({
         subject: ' New User Registration - Action Required',
         html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -33,6 +33,8 @@ const emailTemplates = {
                     <table style="width: 100%; border-collapse: collapse;">
                         <tr><td style="padding: 8px 0; font-weight: bold; color: #495057;">Name:</td><td style="padding: 8px 0; color: #333;">${userName}</td></tr>
                         <tr><td style="padding: 8px 0; font-weight: bold; color: #495057;">Email:</td><td style="padding: 8px 0; color: #333;">${userEmail}</td></tr>
+                        <tr><td style="padding: 8px 0; font-weight: bold; color: #495057;">Role:</td><td style="padding: 8px 0; color: #333;">${userRole}</td></tr>
+                        <tr><td style="padding: 8px 0; font-weight: bold; color: #495057;">Domains:</td><td style="padding: 8px 0; color: #333;"><strong>${userDomains && userDomains.length > 0 ? userDomains.join(', ') : 'Not specified'}</strong></td></tr>
                         <tr><td style="padding: 8px 0; font-weight: bold; color: #495057;">User ID:</td><td style="padding: 8px 0; color: #6c757d; font-family: monospace; font-size: 12px;">${userId}</td></tr>
                         <tr><td style="padding: 8px 0; font-weight: bold; color: #495057;">Registration Date:</td><td style="padding: 8px 0; color: #333;">${new Date().toLocaleDateString()}</td></tr>
                         <tr><td style="padding: 8px 0; font-weight: bold; color: #495057;">Status:</td><td style="padding: 8px 0; color: #ffc107; font-weight: bold;">⏳ Pending Approval</td></tr>
@@ -66,7 +68,7 @@ const emailTemplates = {
                 
                 <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-top: 20px; border: 1px solid #ffeaa7;">
                     <p style="color: #856404; font-size: 14px; margin: 0;">
-                        ⚡ <strong>Quick Tip:</strong> You can find this user in the "Pending Users" section of your admin dashboard. Use the User ID above for quick reference.
+                         <strong>Quick Tip:</strong> You can find this user in the "Pending Users" section of your admin dashboard. Use the User ID above for quick reference.
                     </p>
                 </div>
                 
@@ -88,7 +90,7 @@ const emailTemplates = {
                 <p>Hi <strong>${userName}</strong>,</p>
                 <p>Great news! Your account has been approved by an administrator. You can now log in and start using TaskBucket to manage your tasks and collaborate with your team.</p>
                 <p>
-                    <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/" 
+                    <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/" 
                        style="background: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
                        Login Now
                     </a>
@@ -128,7 +130,7 @@ const emailTemplates = {
                     <p><strong>Assigned By:</strong> ${assignedBy}</p>
                 </div>
                 <p>
-                    <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard" 
+                    <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/dashboard" 
                        style="background: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
                        View Task
                     </a>
@@ -155,7 +157,7 @@ const emailTemplates = {
                     `).join('')}
                 </div>
                 <p>
-                    <a href="${process.env.FRONTEND_URL}/dashboard" 
+                    <a href="${process.env.CLIENT_URL}/dashboard" 
                        style="background: #dc3545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
                        View All Tasks
                     </a>
@@ -167,11 +169,11 @@ const emailTemplates = {
 };
 
 // Send email functions
-export const sendNewUserNotificationToAdmins = async (userName, userEmail, userId) => {
+export const sendNewUserNotificationToAdmins = async (userName, userEmail, userId, userRole, userDomains) => {
     try {
         const transporter = createTransporter();
         const adminEmails = process.env.ADMIN_EMAILS.split(',');
-        const template = emailTemplates.newUserRegistration(userName, userEmail, userId);
+        const template = emailTemplates.newUserRegistration(userName, userEmail, userId, userRole, userDomains);
         
         for (const adminEmail of adminEmails) {
             await transporter.sendMail({

@@ -73,6 +73,7 @@ export const checkTaskAccess = async (req, res, next) => {
         // Check if user has access to this task
         const hasAccess = 
             task.domain === req.user.domain ||
+            (req.user.domains || []).includes(task.domain) ||
             task.taskMaker.toString() === req.user._id.toString() ||
             task.assignedTo.toString() === req.user._id.toString();
 

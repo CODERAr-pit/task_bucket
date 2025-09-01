@@ -8,7 +8,7 @@ const getUsersInDomain = async (req, res) => {
         
         // Get all users regardless of domain
         const users = await User.find({})
-            .select('name email role avatar domain')
+            .select('name email role avatar domain domains')
             .sort({ name: 1 });
 
         const formattedUsers = users.map(user => ({
@@ -17,7 +17,8 @@ const getUsersInDomain = async (req, res) => {
             email: user.email,
             role: user.role,
             avatar: user.avatar,
-            domain: user.domain // Include domain for display
+            domain: user.domain,
+            domains: user.domains || [user.domain].filter(Boolean) // Include domains for display
         }));
 
         res.status(200).json({
@@ -41,15 +42,21 @@ const getUsersFiltered = async (req, res) => {
         
         let query = {};
         
-        // Filter by single domain
+        // Filter by single domain - check both domain and domains fields
         if (domain && domain !== 'all') {
-            query.domain = domain;
+            query.$or = [
+                { domain: domain },
+                { domains: domain }
+            ];
         }
         
-        // Filter by multiple domains
+        // Filter by multiple domains - check both domain and domains fields
         if (domains) {
             const domainArray = Array.isArray(domains) ? domains : domains.split(',');
-            query.domain = { $in: domainArray };
+            query.$or = [
+                { domain: { $in: domainArray } },
+                { domains: { $in: domainArray } }
+            ];
         }
         
         // Filter by single role
@@ -66,7 +73,7 @@ const getUsersFiltered = async (req, res) => {
         // console.log('🔍 getUsersFiltered query:', query);
         
         const users = await User.find(query)
-            .select('_id name email role domain avatar')
+            .select('_id name email role domain domains avatar')
             .sort({ role: 1, name: 1 }) // Sort by role first, then name
             .lean();
 
@@ -76,7 +83,8 @@ const getUsersFiltered = async (req, res) => {
             email: user.email,
             role: user.role,
             avatar: user.avatar,
-            domain: user.domain
+            domain: user.domain,
+            domains: user.domains || [user.domain].filter(Boolean) // Include domains array
         }));
         
         // Group users by domain and role for easier frontend handling
@@ -114,15 +122,31 @@ const getUsersFiltered = async (req, res) => {
 // Get available filter options
 const getFilterOptions = async (req, res) => {
     try {
-        // Get unique domains and roles
-        const domains = await User.distinct('domain');
+        // Get unique domains from both domain and domains fields
+        const legacyDomains = await User.distinct('domain');
+        const newDomains = await User.distinct('domains');
+        const allDomains = [...new Set([...legacyDomains, ...newDomains])].filter(Boolean);
+        
         const roles = await User.distinct('role');
         
         // Get count by domain and role combinations
+        // Need to handle both legacy domain field and new domains array
         const combinations = await User.aggregate([
             {
+                $addFields: {
+                    allUserDomains: {
+                        $cond: {
+                            if: { $ifNull: ['$domains', false] },
+                            then: '$domains',
+                            else: ['$domain']
+                        }
+                    }
+                }
+            },
+            { $unwind: '$allUserDomains' },
+            {
                 $group: {
-                    _id: { domain: '$domain', role: '$role' },
+                    _id: { domain: '$allUserDomains', role: '$role' },
                     count: { $sum: 1 }
                 }
             },
@@ -133,7 +157,7 @@ const getFilterOptions = async (req, res) => {
         
         res.status(200).json({
             success: true,
-            domains: domains.sort(),
+            domains: allDomains.sort(),
             roles: roles.sort(),
             combinations: combinations.map(combo => ({
                 domain: combo._id.domain,

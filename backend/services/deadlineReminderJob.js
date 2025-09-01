@@ -210,7 +210,7 @@ if (!(typeof require !== 'undefined' && require.main === module)) {
 //   (async () => {
 //     await connectDB();
 //     await sendDeadlineMissedReminders();
-//     console.log('✅ Manual deadline reminder run complete.');
+//     console.log(' Manual deadline reminder run complete.');
 //     process.exit(0);
 //   })();
 // }

@@ -58,11 +58,7 @@ const Navbar = () => {
     // Handle domain filtering with smooth animation and navigation
     const handleDomainFilter = (domain) => {
         console.log('Domain filter clicked:', domain);
-
-        // Close mobile menu when domain is selected
         setMobileMenuOpen(false);
-
-        // Use the context filtering function with navigation
         selectDomainAndFilter(domain, navigate);
     };
 
@@ -76,7 +72,6 @@ const Navbar = () => {
         try {
             return getTaskCountForDomain(domain, sampleTasks);
         } catch {
-            // Fallback calculation
             if (domain === 'General') return sampleTasks.length;
             const mappedDomain = domain === 'Web Development' ? 'WebD' : domain;
             return sampleTasks.filter(task => task.domain === mappedDomain).length;
@@ -96,7 +91,6 @@ const Navbar = () => {
     // Handle logout
     const handleLogout = async () => {
         try {
-            // Call logout API
             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
             const response = await fetch(`${apiUrl}/api/auth/logout`, {
                 method: 'POST',
@@ -107,17 +101,14 @@ const Navbar = () => {
                 },
             });
 
-            // Clear local storage regardless of API response
             localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
             localStorage.removeItem('userData');
 
-            // Redirect to login
             navigate('/');
             console.log('User logged out successfully');
         } catch (error) {
             console.error('Logout error:', error);
-            // Still clear local storage and redirect on error
             localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
             localStorage.removeItem('userData');
@@ -149,50 +140,63 @@ const Navbar = () => {
         };
     }, [dropdownOpen, mobileMenuOpen]);
 
-    // Domain Button Component for reusability
+    // **FIXED: Domain Button Component with Proper Colors**
     const DomainButton = ({ domain, index, isMobile = false }) => {
         const taskCount = getTaskCount(domain);
         const isSelected = isDomainSelected(domain) || isCurrentDomainRoute(domain);
 
-        const colors = [
-            'bg-badge-corporate/20 text-badge-corporate border-badge-corporate/30',
-            'bg-badge-public/20 text-badge-public border-badge-public/30',
-            'bg-badge-service/20 text-badge-service border-badge-service/30',
-            'bg-badge-entrepreneurial/20 text-badge-entrepreneurial border-badge-entrepreneurial/30'
-        ];
+        // **Static color mapping for each domain**
+        const getDomainColors = (domainName) => {
+            switch (domainName?.toLowerCase()) {
+                case "web development":
+                    return {
+                        selected: "bg-indigo-100 text-indigo-600 border-indigo-200",
+                        unselected: "bg-white text-neutral-600 border-neutral-200 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200",
+                        badge: isSelected ? "bg-indigo-500 text-white" : "bg-neutral-100 text-neutral-500"
+                    };
+                case "graphic designing":
+                case "graphic design":
+                    return {
+                        selected: "bg-amber-100 text-amber-600 border-amber-200",
+                        unselected: "bg-white text-neutral-600 border-neutral-200 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200",
+                        badge: isSelected ? "bg-amber-500 text-white" : "bg-neutral-100 text-neutral-500"
+                    };
+                case "video editing":
+                    return {
+                        selected: "bg-emerald-100 text-emerald-600 border-emerald-200",
+                        unselected: "bg-white text-neutral-600 border-neutral-200 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200",
+                        badge: isSelected ? "bg-emerald-500 text-white" : "bg-neutral-100 text-neutral-500"
+                    };
+                case "content writing":
+                    return {
+                        selected: "bg-rose-100 text-rose-600 border-rose-200",
+                        unselected: "bg-white text-neutral-600 border-neutral-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200",
+                        badge: isSelected ? "bg-rose-500 text-white" : "bg-neutral-100 text-neutral-500"
+                    };
+                case "general":
+                default:
+                    return {
+                        selected: "bg-neutral-200 text-neutral-700 border-neutral-300",
+                        unselected: "bg-white text-neutral-600 border-neutral-200 hover:bg-neutral-50 hover:text-neutral-700 hover:border-neutral-300",
+                        badge: isSelected ? "bg-neutral-500 text-white" : "bg-neutral-100 text-neutral-500"
+                    };
+            }
+        };
 
-        const badgeColors = [
-            'bg-badge-corporate/40 text-badge-corporate',
-            'bg-badge-public/40 text-badge-public',
-            'bg-badge-service/40 text-badge-service',
-            'bg-badge-entrepreneurial/40 text-badge-entrepreneurial'
-        ];
-
-        const hoverColors = [
-            'hover:bg-badge-corporate/10 hover:border-badge-corporate/20',
-            'hover:bg-badge-public/10 hover:border-badge-public/20',
-            'hover:bg-badge-service/10 hover:border-badge-service/20',
-            'hover:bg-badge-entrepreneurial/10 hover:border-badge-entrepreneurial/20'
-        ];
+        const colors = getDomainColors(domain);
 
         return (
             <button
                 type="button"
-                className={`relative px-3 py-2 rounded-2xl text-sm font-medium transition-all duration-200 border whitespace-nowrap ${
+                className={`relative px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-250 border whitespace-nowrap ${
                     isMobile ? 'w-full justify-between' : ''
                 } ${
-                    isSelected
-                        ? (domain === 'General' ? 'bg-badge-academic/20 text-badge-academic border border-badge-academic/30 shadow-card' : colors[index])
-                        : `bg-bg-card-hover text-text-body hover:bg-bg-card-hover/80 border border-border-primary hover:shadow-card ${domain !== 'General' ? hoverColors[index] : ''}`
-                } flex items-center`}
+                    isSelected ? colors.selected : colors.unselected
+                } flex items-center shadow-sm`}
                 onClick={() => handleDomainFilter(domain)}
             >
                 <span>{domain}</span>
-                <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-semibold ${
-                    isSelected
-                        ? (domain === 'General' ? 'bg-badge-academic/40 text-badge-academic' : badgeColors[index])
-                        : 'bg-bg-card text-text-muted'
-                }`}>
+                <span className={`ml-3 px-3 py-1 rounded-lg text-xs font-bold ${colors.badge}`}>
                     {taskCount}
                 </span>
             </button>
@@ -203,38 +207,32 @@ const Navbar = () => {
     const TaskFilterButton = ({ filter, label, isMobile = false }) => {
         const [taskCount, setTaskCount] = useState(0);
         const currentUser = getCurrentUser();
-        
-        // Calculate task count based on filter type
+
         useEffect(() => {
             const calculateTaskCount = () => {
                 if (!tasks || tasks.length === 0 || !currentUser) return 0;
-                
+
                 if (filter === 'assigned') {
-                    // Count tasks assigned to the current user
                     const count = tasks.filter(task => {
-                        // Check if current user ID is in the assignedTo array
                         if (Array.isArray(task.assignedTo)) {
-                            return task.assignedTo.includes(currentUser._id) || 
-                                   task.assignedTo.includes(currentUser.id);
+                            return task.assignedTo.includes(currentUser._id) ||
+                                task.assignedTo.includes(currentUser.id);
                         }
-                        // Handle single assignee case
-                        return task.assignedTo === currentUser._id || 
-                               task.assignedTo === currentUser.id;
+                        return task.assignedTo === currentUser._id ||
+                            task.assignedTo === currentUser.id;
                     }).length;
                     return count;
                 } else if (filter === 'created') {
-                    // Count tasks created by the current user
                     const count = tasks.filter(task => {
-                        return task.taskMaker === currentUser._id || 
-                               task.taskMaker === currentUser.id;
+                        return task.taskMaker === currentUser._id ||
+                            task.taskMaker === currentUser.id;
                     }).length;
                     return count;
                 }
                 return 0;
             };
-            
+
             const count = calculateTaskCount();
-            console.log(`${filter} tasks count:`, count);
             setTaskCount(count);
         }, [tasks, filter, currentUser]);
 
@@ -243,12 +241,12 @@ const Navbar = () => {
         return (
             <button
                 type="button"
-                className={`relative px-3 py-2 rounded-2xl text-sm font-medium transition-all duration-200 border whitespace-nowrap ${
+                className={`relative px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-250 border whitespace-nowrap ${
                     isMobile ? 'w-full justify-between' : ''
                 } ${
                     isSelected
-                        ? 'bg-status-pending/20 text-status-pending border border-status-pending/30 shadow-card'
-                        : 'bg-bg-card-hover text-text-body hover:bg-bg-card-hover/80 border border-border-primary hover:shadow-card hover:border-status-pending/20'
+                        ? 'bg-indigo-100 text-indigo-600 border-indigo-200 shadow-sm'
+                        : 'bg-white text-neutral-600 border-neutral-200 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 shadow-sm'
                 } flex items-center`}
                 onClick={() => {
                     setSelectedDomain(`filter:${filter}`);
@@ -256,10 +254,10 @@ const Navbar = () => {
                 }}
             >
                 <span>{label}</span>
-                <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-semibold ${
+                <span className={`ml-3 px-3 py-1 rounded-lg text-xs font-bold ${
                     isSelected
-                        ? 'bg-status-pending/40 text-status-pending'
-                        : 'bg-bg-card text-text-muted'
+                        ? 'bg-indigo-500 text-white'
+                        : 'bg-neutral-100 text-neutral-500'
                 }`}>
                     {taskCount}
                 </span>
@@ -267,39 +265,33 @@ const Navbar = () => {
         );
     };
 
-    // Handle task filter selection
-    const handleTaskFilter = (filter) => {
-        setSelectedDomain(`filter:${filter}`);
-        setMobileMenuOpen(false);
-    };
-
     return (
-        <nav className="bg-bg-card border-b border-border-primary shadow-card sticky top-0 z-50">
-            <div className="max-w-full mx-auto px-4 sm:px-6 py-3 sm:py-4">
+        <nav className="bg-surface border-b border-neutral-200 shadow-sm sticky top-0 z-50 backdrop-blur-sm">
+            <div className="max-w-full mx-auto px-6 py-4">
                 <div className="flex items-center justify-between">
                     {/* Logo/Title Section */}
-                    <div className="flex-shrink-0 flex items-center gap-2 sm:gap-3">
+                    <div className="flex-shrink-0 flex items-center gap-3">
                         <Link
                             to="/dashboard"
-                            className="flex items-center gap-2 sm:gap-3 group"
+                            className="flex items-center gap-3 group"
                             onClick={() => selectDomainAndFilter('General', navigate)}
                         >
-                            <img src={"/image2.png"} alt="logo" className="h-8 sm:h-12 w-auto" />
-                            <h1 className="text-lg sm:text-2xl font-semibold text-text-heading group-hover:text-badge-academic transition-colors duration-200 hidden xs:block">
+                            <img src={"/edc.svg"} alt="logo" className="h-10 sm:h-12" />
+                            <h1 className="text-xl sm:text-2xl font-bold text-neutral-700 group-hover:text-indigo-600 transition-colors duration-250 hidden xs:block">
                                 Task Dashboard
                             </h1>
                         </Link>
                     </div>
 
-                    {/* Desktop Domain Filter Buttons - Only show on dashboard and larger screens */}
+                    {/* Desktop Domain Filter Buttons */}
                     {isDashboardPage && (
-                        <div className="hidden lg:flex items-center gap-2 flex-shrink-0">
+                        <div className="hidden lg:flex items-center gap-3 flex-shrink-0">
                             {/* General Button */}
                             <DomainButton domain="General" index={-1} />
 
                             {/* My Tasks Button */}
                             <TaskFilterButton filter="assigned" label="My Tasks" />
-                            
+
                             {/* Created Tasks Button */}
                             <TaskFilterButton filter="created" label="Created Tasks" />
 
@@ -311,13 +303,13 @@ const Navbar = () => {
                     )}
 
                     {/* Right Section: Mobile Menu Button + Profile */}
-                    <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-                        {/* Mobile Menu Button - Only show on dashboard pages */}
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                        {/* Mobile Menu Button */}
                         {isDashboardPage && (
                             <button
                                 id="mobile-menu-button"
                                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                                className="lg:hidden p-2 text-text-body hover:text-text-heading hover:bg-bg-card-hover rounded-2xl transition-all duration-200"
+                                className="lg:hidden p-3 text-neutral-500 hover:text-neutral-600 hover:bg-neutral-100 rounded-xl transition-all duration-250"
                             >
                                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                             </button>
@@ -327,23 +319,23 @@ const Navbar = () => {
                         <div className="relative" id="user-dropdown">
                             <button
                                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                                className="flex items-center gap-2 sm:gap-3 bg-bg-card-hover hover:bg-bg-card-hover/80 rounded-2xl px-2 sm:px-3 py-2 border border-border-primary transition-all duration-200 hover:shadow-card"
+                                className="flex items-center gap-3 bg-neutral-50 hover:bg-neutral-100 rounded-xl px-4 py-3 border border-neutral-200 transition-all duration-250 hover:shadow-sm"
                             >
-                                <div className="w-8 h-8 bg-gradient-to-br from-badge-academic to-badge-academic/80 rounded-full flex items-center justify-center text-text-heading font-semibold text-sm">
+                                <div className="w-9 h-9 bg-indigo-500 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm">
                                     {user.avatar ? (
-                                        <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full object-cover" />
+                                        <img src={user.avatar} alt={user.name} className="w-9 h-9 rounded-xl object-cover" />
                                     ) : (
                                         getUserInitials(user.name)
                                     )}
                                 </div>
 
                                 <div className="text-left hidden sm:block">
-                                    <p className="text-sm font-medium text-text-heading">{user.name}</p>
-                                    <p className="text-xs text-text-muted">{user.role}</p>
+                                    <p className="text-sm font-semibold text-neutral-700">{user.name}</p>
+                                    <p className="text-xs text-neutral-500">{user.role}</p>
                                 </div>
 
                                 <svg
-                                    className={`w-4 h-4 text-gray-500 transition-transform duration-200 hidden sm:block ${dropdownOpen ? 'rotate-180' : ''}`}
+                                    className={`w-4 h-4 text-neutral-400 transition-transform duration-250 hidden sm:block ${dropdownOpen ? 'rotate-180' : ''}`}
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
@@ -352,22 +344,22 @@ const Navbar = () => {
                                 </svg>
                             </button>
 
-                            {/* Profile Dropdown - Simplified with only logout */}
+                            {/* Profile Dropdown */}
                             {dropdownOpen && (
-                                <div className="absolute right-0 mt-2 w-48 bg-bg-card rounded-2xl shadow-card-hover border border-border-primary py-2 z-50">
-                                    <div className="px-4 py-3 border-b border-border-primary">
-                                        <p className="text-sm font-medium text-text-heading">{user.name}</p>
-                                        <p className="text-xs text-text-muted">{user.email}</p>
-                                        <p className="text-xs text-badge-academic font-medium">{user.role}</p>
+                                <div className="absolute right-0 mt-3 w-56 bg-surface rounded-xl shadow-xl border border-neutral-200 py-3 z-50">
+                                    <div className="px-5 py-4 border-b border-neutral-200">
+                                        <p className="text-sm font-semibold text-neutral-700">{user.name}</p>
+                                        <p className="text-xs text-neutral-500 mt-1">{user.email}</p>
+                                        <p className="text-xs text-indigo-600 font-semibold mt-1">{user.role}</p>
                                     </div>
 
-                                    {/* Admin Dashboard Link - Show only for admins */}
+                                    {/* Admin Dashboard Link */}
                                     {user.isAdmin && (
-                                        <div className="py-2 border-b border-border-primary">
+                                        <div className="py-2 border-b border-neutral-200">
                                             <Link
                                                 to="/admin"
                                                 onClick={() => setDropdownOpen(false)}
-                                                className="flex items-center gap-3 w-full px-4 py-2 text-sm text-badge-academic hover:bg-badge-academic/10 transition-colors duration-150"
+                                                className="flex items-center gap-3 w-full px-5 py-3 text-sm text-indigo-600 hover:bg-indigo-50 transition-colors duration-250 rounded-lg mx-2"
                                             >
                                                 <Settings className="w-4 h-4" />
                                                 Admin Dashboard
@@ -375,14 +367,14 @@ const Navbar = () => {
                                         </div>
                                     )}
 
-                                    {/* Only Logout Button */}
+                                    {/* Logout Button */}
                                     <div className="py-2">
                                         <button
                                             onClick={() => {
                                                 setDropdownOpen(false);
                                                 handleLogout();
                                             }}
-                                            className="flex items-center gap-3 w-full px-4 py-2 text-sm text-status-declined hover:bg-status-declined/10 transition-colors duration-150"
+                                            className="flex items-center gap-3 w-full px-5 py-3 text-sm text-rose-600 hover:bg-rose-50 transition-colors duration-250 rounded-lg mx-2"
                                         >
                                             <LogOut className="w-4 h-4" />
                                             Sign Out
@@ -394,22 +386,16 @@ const Navbar = () => {
                     </div>
                 </div>
 
-                {/* Mobile Domain Filter Menu - Only show on dashboard pages */}
+                {/* Mobile Domain Filter Menu */}
                 {isDashboardPage && mobileMenuOpen && (
-                    <div id="mobile-menu" className="lg:hidden mt-4 pb-4 border-t border-border-primary pt-4">
-                        <div className="space-y-2">
-                            <p className="text-sm font-medium text-text-heading mb-3">Filter by Domain</p>
+                    <div id="mobile-menu" className="lg:hidden mt-5 pb-4 border-t border-neutral-200 pt-5">
+                        <div className="space-y-3">
+                            <p className="text-sm font-semibold text-neutral-600 mb-4">Filter by Domain</p>
 
-                            {/* General Button Mobile */}
                             <DomainButton domain="General" index={-1} isMobile />
-
-                            {/* My Tasks Button Mobile */}
                             <TaskFilterButton filter="assigned" label="My Tasks" isMobile />
-                            
-                            {/* Created Tasks Button Mobile */}
                             <TaskFilterButton filter="created" label="Created Tasks" isMobile />
 
-                            {/* Domain Buttons Mobile */}
                             {domains.map((domain, index) => (
                                 <DomainButton key={domain} domain={domain} index={index} isMobile />
                             ))}

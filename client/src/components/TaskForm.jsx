@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../ui/Navbar.jsx";
-import Footer from "./Footer.jsx";
 import { useTaskContext } from "../context/TaskContext.jsx";
 import DomainSpecificAssignment from "./DomainSpecificAssignment.jsx";
 
@@ -75,7 +74,7 @@ const CreateTaskForm = () => {
 
       // Call the API to create task
       const newTask = await createTask(taskData);
-      
+
       setSubmitted(true);
 
       // Reset form after 2 seconds and redirect to dashboard
@@ -94,9 +93,9 @@ const CreateTaskForm = () => {
   }
 
   return (
-      <div className="min-h-screen bg-bg-primary flex flex-col">
+      <>
       <Navbar />
-      <div className="flex-1 py-12 px-4">
+      <div className="min-h-screen bg-bg-primary py-12 px-4">
         <div className="max-w-4xl mx-auto">
           
           <div className="bg-bg-card rounded-3xl shadow-card border border-border-primary overflow-y-scroll scrollbar-hide">
@@ -143,19 +142,19 @@ const CreateTaskForm = () => {
               {/* Domain & Assigned By - Row */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-white  uppercase tracking-wide">
+                  <label className="block text-sm font-semibold text-text-body uppercase tracking-wide">
                     Domain
                   </label>
                   <select
                       name="domain"
                       value={form.domain}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 border border-border-primary text-white rounded-xl focus:ring-2 focus:ring-status-accepted focus:border-status-accepted transition-all duration-200 bg-bg-primary  appearance-none cursor-pointer"
+                      className="w-full px-4 py-3 border border-border-primary rounded-xl focus:ring-2 focus:ring-status-accepted focus:border-status-accepted transition-all duration-200 bg-bg-primary text-text-heading appearance-none cursor-pointer"
                       required
                   >
-                    <option value="" className="bg-bg-primary text-white">Select Domain</option>
+                    <option value="" className="bg-bg-primary text-text-muted">Select Domain</option>
                     {domainOptions.map((domain) => (
-                        <option key={domain} value={domain} className="bg-bg-primary text-white ">{domain}</option>
+                        <option key={domain} value={domain} className="bg-bg-primary text-text-heading">{domain}</option>
                     ))}
                   </select>
                 </div>
@@ -329,8 +328,7 @@ const CreateTaskForm = () => {
           </div>
         </div>
       </div>
-      <Footer />
-      </div>
+      </>
   );
 };
 

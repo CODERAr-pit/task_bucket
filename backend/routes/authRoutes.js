@@ -8,13 +8,22 @@ const router = express.Router();
 // Register user
 router.post("/register", async (req, res) => {
   try {
-    const { name, email, password, role, domain } = req.body;
+    const { name, email, password, role, domain, domains } = req.body;
 
     // Validation
-    if (!name || !email || !password || !role || !domain) {
+    if (!name || !email || !password || !role) {
       return res.status(400).json({
         success: false,
-        message: "All fields are required",
+        message: "Name, email, password, and role are required",
+      });
+    }
+
+    // Validate domains - either domains array or single domain must be provided
+    const userDomains = domains && domains.length > 0 ? domains : (domain ? [domain] : null);
+    if (!userDomains || userDomains.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "At least one domain must be selected",
       });
     }
 
@@ -33,7 +42,8 @@ router.post("/register", async (req, res) => {
       email,
       password,
       role,
-      domain,
+      domains: userDomains,
+      domain: userDomains[0], // Set primary domain for backward compatibility
     });
 
     await user.save();
@@ -60,7 +70,7 @@ router.post("/register", async (req, res) => {
 
     // Send notification to admins
     try {
-      await sendNewUserNotificationToAdmins(user.name, user.email, user._id);
+      await sendNewUserNotificationToAdmins(user.name, user.email, user._id, user.role, user.domains);
       console.log('Admin notification sent successfully for new user:', user.email);
     } catch (emailError) {
       console.error('Failed to send admin notification:', emailError);

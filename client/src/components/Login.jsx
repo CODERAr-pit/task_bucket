@@ -39,8 +39,6 @@ const Login = ({ onBackToSignUp }) => {
   localStorage.setItem('accessToken', data.accessToken);
   localStorage.setItem('refreshToken', data.refreshToken);
   localStorage.setItem('userData', JSON.stringify(data.user));
-
-  console.log('Login successful:', data);
   
   // Show notification popup for regular users, redirect admins immediately
   if (data.user.isAdmin) {

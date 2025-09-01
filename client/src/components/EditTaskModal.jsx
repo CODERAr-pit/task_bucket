@@ -4,7 +4,6 @@ import { useTaskContext } from '../context/TaskContext';
 import { canUserEditTask, canUserUpdateStatus } from '../utils/permissions';
 
 const EditTaskModal = ({ isOpen, onClose, task, permissions }) => {
-  console.log('EditTaskModal render - isOpen:', isOpen, 'task:', task, 'permissions:', permissions);
   const { updateTask } = useTaskContext();
   const [users, setUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
@@ -106,13 +105,9 @@ const EditTaskModal = ({ isOpen, onClose, task, permissions }) => {
     user.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  console.log('EditTaskModal - Before early return check. isOpen:', isOpen);
   if (!isOpen) {
-    console.log('EditTaskModal - Returning null because isOpen is false');
     return null;
   }
-
-  console.log('EditTaskModal - Rendering modal UI');
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">

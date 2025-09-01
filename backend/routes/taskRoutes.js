@@ -28,6 +28,9 @@ import {
 
 // ...existing code...
 
+// GET ALL USERS (for individual selection mode)
+router.get('/users', authenticate, getUsersInDomain);
+
 // GET FILTERED USERS (for domain-specific assignment)
 router.get('/users/filtered', authenticate, getUsersFiltered);
 

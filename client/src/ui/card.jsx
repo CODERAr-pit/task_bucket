@@ -52,13 +52,8 @@ const TaskCard = ({
   // Fetch permissions when component mounts
   useEffect(() => {
     if (task?.id || task?._id) {
-      console.log(
-        "TaskCard: Fetching permissions for task:",
-        task?.id || task?._id
-      );
       fetchTaskPermissions(task.id || task._id)
         .then((perms) => {
-          console.log("TaskCard: Task permissions loaded:", perms);
           setPermissions(perms);
         })
         .catch((err) => {
@@ -77,11 +72,6 @@ const TaskCard = ({
       });
     }
   }, [task?.id, task?._id]);
-
-  // Debug modal state changes
-  useEffect(() => {
-    console.log("TaskCard - showEditModal changed:", showEditModal);
-  }, [showEditModal]);
 
   // Update editData when task prop changes
   useEffect(() => {
@@ -279,15 +269,8 @@ const TaskCard = ({
                   </select>
                   <button
                     onClick={async () => {
-                      console.log(
-                        "Updating task:",
-                        task.id || task._id,
-                        "with data:",
-                        editData
-                      );
                       try {
                         await onUpdate?.(task.id || task._id, editData);
-                        console.log("Task update successful");
                         setIsEditing(false);
                       } catch (error) {
                         console.error("Error updating task:", error);
@@ -357,10 +340,6 @@ const TaskCard = ({
                         {/* Always show edit button for now to test functionality */}
                         <button
                           onClick={() => {
-                            console.log(
-                              "Edit button clicked, opening modal for task:",
-                              task
-                            );
                             setShowEditModal(true);
                             setShowActions(false);
                           }}
@@ -369,32 +348,6 @@ const TaskCard = ({
                           <Edit3 className="w-3 h-3" />
                           Edit Task
                         </button>
-                        {/* Original permissions-based edit button */}
-                        {/* {(() => {
-                          const canEdit = canUserEditTask(permissions);
-                          console.log(
-                            "TaskCard: Can user edit task?",
-                            canEdit,
-                            "permissions:",
-                            permissions
-                          );
-                          return canEdit;
-                        })() && (
-                          <button
-                            onClick={() => {
-                              console.log(
-                                "Edit button clicked, opening modal for task:",
-                                task
-                              );
-                              setShowEditModal(true);
-                              setShowActions(false);
-                            }}
-                            className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700"
-                          >
-                            <Edit3 className="w-3 h-3" />
-                            Edit Task
-                          </button>
-                        )} */}
                         {canUserEditTask(permissions) && (
                           <button
                             onClick={() => {
@@ -609,12 +562,6 @@ const TaskCard = ({
       </div>
 
       {/* Edit Task Modal */}
-      {console.log(
-        "TaskCard - Rendering EditTaskModal with showEditModal:",
-        showEditModal,
-        "task:",
-        task
-      )}
       <EditTaskModal
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}

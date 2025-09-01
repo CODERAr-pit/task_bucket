@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import TaskCard from "../ui/card.jsx";
 import Navbar from "../ui/Navbar.jsx";
+import Footer from "./Footer.jsx";
 import TaskDetailsModal from "./TaskDetailsModal.jsx";
 import EditTaskModal from "./EditTaskModal.jsx";
 import {useTaskContext} from "../context/TaskContext";
@@ -41,11 +42,10 @@ const Dashboard = ({ domainName = "" }) => {
 
   // Handle opening edit modal
   const handleEditTask = async (task) => {
-    console.log('Dashboard: Opening edit modal for task:', task);
     try {
       // Fetch permissions for the task
       const permissions = await fetchTaskPermissions(task.id || task._id);
-      console.log('Dashboard: Task permissions loaded:', permissions);
+      
       
       setEditingTask(task);
       setTaskPermissions(permissions);
@@ -62,13 +62,10 @@ const Dashboard = ({ domainName = "" }) => {
   };
 
   const handleUpdateTask = async (taskId, updateData) => {
-    console.log('Dashboard: Updating task', taskId, 'with data:', updateData);
     try {
       await updateTask(taskId, updateData);
-      console.log('Dashboard: Task update successful, refetching tasks');
       // Refetch tasks to get updated data
       await fetchTasks();
-      console.log('Dashboard: Tasks refetched');
       
       // Close edit modal if open
       setShowEditModal(false);
@@ -101,20 +98,14 @@ const Dashboard = ({ domainName = "" }) => {
     return selectedDomain === 'General' ? 'All Tasks' : `${selectedDomain} Tasks`;
   };
 
-  console.log('Dashboard render - selectedDomain:', selectedDomain);
-  console.log('Tasks from backend:', tasks);
-
   // Use the context's filtering method that handles both domain and task filters
   const filteredTasks = getFilteredTasks(tasks);
 
-  console.log('Filtered tasks:', filteredTasks.length);
-
   return (
-      <div className="min-h-screen bg-bg-primary">
-        {console.log('[Dashboard] Rendering TaskDetailsModal. showTaskDetails:', showTaskDetails, 'selectedTask:', selectedTask)}
+      <div className="min-h-screen bg-bg-primary flex flex-col">
         <Navbar />
 
-        <div className="max-w-[1700px] mx-auto px-4 py-6">
+        <div className="max-w-[1700px] mx-auto px-4 py-6 flex-1">
           {/* Loading State */}
           {loading && (
             <div className="text-center py-8">
@@ -155,19 +146,6 @@ const Dashboard = ({ domainName = "" }) => {
                 </p>
               </div>
               <div className="flex gap-2">
-                {/* <button 
-                  onClick={() => {
-                    console.log('=== MANUAL DEBUG ===');
-                    console.log('selectedDomain:', selectedDomain);
-                    console.log('Total tasks:', tasks.length);
-                    console.log('Filtered tasks:', filteredTasks.length);
-                    console.log('User data:', localStorage.getItem('userData'));
-                    fetchTasks();
-                  }}
-                  className="bg-red-500 hover:bg-red-600 text-white py-2 px-3 rounded-lg text-sm"
-                >
-                  Debug
-                </button> */}
                 <Link to="/tasks">
                   <button className="bg-bg-card hover:bg-bg-card-hover text-text-heading py-2 px-3 rounded-2xl font-medium text-sm transition-all duration-200 shadow-card hover:shadow-card-hover flex items-center justify-center gap-1 border border-border-primary">
                     <Plus size={20}/>
@@ -210,6 +188,9 @@ const Dashboard = ({ domainName = "" }) => {
             </div>
           )}
         </div>
+        
+        {/* Footer */}
+        <Footer />
         
         {/* Task Details Modal */}
         {showTaskDetails && (

@@ -2,10 +2,8 @@
 
 export const fetchTaskPermissions = async (taskId) => {
     try {
-        console.log('Fetching permissions for task:', taskId);
         const token = localStorage.getItem('token');
         if (!token) {
-            console.log('No token found, trying accessToken');
             const accessToken = localStorage.getItem('accessToken');
             if (!accessToken) {
                 throw new Error('No authentication token found');
@@ -13,7 +11,6 @@ export const fetchTaskPermissions = async (taskId) => {
         }
 
         const authToken = localStorage.getItem('token') || localStorage.getItem('accessToken');
-        console.log('Using token for permissions:', authToken ? 'Token found' : 'No token');
 
         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
         const response = await fetch(`${apiUrl}/api/tasks/${taskId}/permissions`, {
@@ -23,15 +20,12 @@ export const fetchTaskPermissions = async (taskId) => {
                 'Content-Type': 'application/json'
             }
         });
-
-        console.log('Permissions response status:', response.status);
         
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log('Permissions data received:', data);
         return data.permissions;
     } catch (error) {
         console.error('Error fetching task permissions:', error);

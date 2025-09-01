@@ -57,8 +57,6 @@ const Navbar = () => {
 
     // Handle domain filtering with smooth animation and navigation
     const handleDomainFilter = (domain) => {
-        console.log('Domain filter clicked:', domain);
-
         // Close mobile menu when domain is selected
         setMobileMenuOpen(false);
 
@@ -114,7 +112,6 @@ const Navbar = () => {
 
             // Redirect to login
             navigate('/');
-            console.log('User logged out successfully');
         } catch (error) {
             console.error('Logout error:', error);
             // Still clear local storage and redirect on error
@@ -234,7 +231,6 @@ const Navbar = () => {
             };
             
             const count = calculateTaskCount();
-            console.log(`${filter} tasks count:`, count);
             setTaskCount(count);
         }, [tasks, filter, currentUser]);
 
@@ -284,7 +280,7 @@ const Navbar = () => {
                             className="flex items-center gap-2 sm:gap-3 group"
                             onClick={() => selectDomainAndFilter('General', navigate)}
                         >
-                            <img src={"/image2.png"} alt="logo" className="h-8 sm:h-12 w-auto" />
+                            <img src={"/image2.png"} alt="logo" className="h-20 sm:h-24 w-auto" />
                             <h1 className="text-lg sm:text-2xl font-semibold text-text-heading group-hover:text-badge-academic transition-colors duration-200 hidden xs:block">
                                 Task Dashboard
                             </h1>

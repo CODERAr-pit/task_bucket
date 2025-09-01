@@ -50,21 +50,18 @@ export const TaskProvider = ({ children }) => {
     useEffect(() => {
         const domainFromRoute = routeToDomainMap[location.pathname];
         if (domainFromRoute && domainFromRoute !== selectedDomain && !selectedDomain.startsWith('filter:')) {
-            console.log('Auto-updating domain from route:', location.pathname, '->', domainFromRoute);
             setSelectedDomain(domainFromRoute);
         }
     }, [location.pathname, selectedDomain]);
 
     // Enhanced domain selection with filtering logic and optional navigation
     const selectDomainAndFilter = (domain, navigate = null) => {
-        console.log('Selecting domain and applying filter:', domain);
         setSelectedDomain(domain);
 
         // Navigate to the corresponding route if navigate function is provided
         if (navigate) {
             const targetRoute = domainToRouteMap[domain];
             if (targetRoute && location.pathname !== targetRoute) {
-                console.log('Navigating to:', targetRoute);
                 navigate(targetRoute);
             }
         }
@@ -82,8 +79,6 @@ export const TaskProvider = ({ children }) => {
             const filterType = selectedDomain.replace('filter:', '');
             const currentUser = getCurrentUser();
             
-            console.log(`Filtering by ${filterType} for user:`, currentUser._id || currentUser.id);
-            
             if (filterType === 'assigned') {
                 const filtered = allTasks.filter(task => {
                     // Check if current user ID is in the assignedTo array
@@ -95,7 +90,6 @@ export const TaskProvider = ({ children }) => {
                     return task.assignedTo === currentUser._id || 
                            task.assignedTo === currentUser.id;
                 });
-                console.log(`Found ${filtered.length} assigned tasks`);
                 return filtered;
                 
             } else if (filterType === 'created') {
@@ -104,7 +98,6 @@ export const TaskProvider = ({ children }) => {
                     return task.taskMaker === currentUser._id || 
                            task.taskMaker === currentUser.id;
                 });
-                console.log(`Found ${filtered.length} created tasks`);
                 return filtered;
             }
         }
@@ -200,7 +193,6 @@ export const TaskProvider = ({ children }) => {
             
             const data = await response.json();
             const tasksArray = data.items || data.tasks || data;
-            console.log('Fetched tasks:', tasksArray.length);
             setTasks(tasksArray);
             return data;
         } catch (err) {
@@ -242,7 +234,6 @@ export const TaskProvider = ({ children }) => {
     };
 
     const updateTask = async (id, taskData) => {
-        console.log('TaskContext: Updating task', id, 'with data:', taskData);
         setLoading(true);
         setError(null);
         try {
@@ -254,8 +245,6 @@ export const TaskProvider = ({ children }) => {
                 body: JSON.stringify(taskData),
             });
             
-            console.log('TaskContext: Update response status:', response.status);
-            
             if (!response.ok) {
                 const errorData = await response.json();
                 console.error('TaskContext: Update failed:', errorData);
@@ -263,10 +252,8 @@ export const TaskProvider = ({ children }) => {
             }
             
             const result = await response.json();
-            console.log('TaskContext: Update result:', result);
             const updatedTask = result.data || result; // Backend returns {message, data}
             setTasks(prev => prev.map(task => (task.id === id || task._id === id) ? updatedTask : task));
-            console.log('TaskContext: Task updated in state');
             return updatedTask;
         } catch (err) {
             setError(err.message);

@@ -7,7 +7,7 @@ const SignIn = ({ onSignInSuccess }) => {
     email: '',
     number: '',
     role: '',
-    domain: '',
+    domains: [], // Changed from 'domain' to 'domains' array
     password: '',
     passwordConfirm: ''
   });
@@ -21,6 +21,15 @@ const SignIn = ({ onSignInSuccess }) => {
     });
   };
 
+  const handleDomainToggle = (domain) => {
+    setFormData(prev => ({
+      ...prev,
+      domains: prev.domains.includes(domain)
+        ? prev.domains.filter(d => d !== domain)
+        : [...prev.domains, domain]
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -32,10 +41,10 @@ const SignIn = ({ onSignInSuccess }) => {
         !formData.email ||
         !formData.number ||
         !formData.role ||
-        !formData.domain ||
+        !formData.domains.length || // Changed validation for domains array
         !formData.password
     ) {
-      alert('Please fill in all fields!');
+      alert('Please fill in all fields and select at least one domain!');
       setIsSubmitting(false);
       return;
     }
@@ -52,7 +61,8 @@ const SignIn = ({ onSignInSuccess }) => {
         email: formData.email,
         password: formData.password,
         role: formData.role,
-        domain: formData.domain,
+        domains: formData.domains, // Send domains array
+        domain: formData.domains[0], // Keep first domain for backward compatibility
         number: formData.number
       };
 
@@ -98,7 +108,7 @@ const SignIn = ({ onSignInSuccess }) => {
                 value={formData.firstName}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+                className="w-full px-4 py-3 border-2 text-black border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
               />
             </div>
             <div className="flex flex-col w-full">
@@ -110,7 +120,7 @@ const SignIn = ({ onSignInSuccess }) => {
                   value={formData.lastName}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+                  className="w-full px-4 py-3 border-2 text-black border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
               />
             </div>
           </div>
@@ -125,7 +135,7 @@ const SignIn = ({ onSignInSuccess }) => {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+                className="w-full px-4 py-3 border-2 text-black border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
               />
             </div>
             <div className="flex flex-col w-full">
@@ -137,7 +147,7 @@ const SignIn = ({ onSignInSuccess }) => {
                 value={formData.number}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+                className="w-full px-4 py-3 text-black border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
               />
             </div>
           </div>
@@ -149,7 +159,7 @@ const SignIn = ({ onSignInSuccess }) => {
               name="role"
               value={formData.role}
               onChange={handleChange}
-              className="w-full px-4 py-3 border-2 border-gray-300 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+              className="w-full px-4 py-3 border-2  border-gray-300 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
               required
             >
               <option value="">Select Role</option>
@@ -161,21 +171,30 @@ const SignIn = ({ onSignInSuccess }) => {
           </div>
 
           <div>
-            <label htmlFor="domain" className="block text-sm font-medium text-black mb-1">Domain</label>
-            <select
-              id="domain"
-              name="domain"
-              value={formData.domain}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-slate-900"
-              required
-            >
-              <option value="">Select Domain</option>
-              <option value="Web Development">Web Development</option>
-              <option value="Video Editing">Video Editing</option>
-              <option value="Graphic Designing">Graphic Designing</option>
-              <option value="Content Writing">Content Writing</option>
-            </select>
+            <label htmlFor="domains" className="block text-sm font-medium text-black mb-2">Domains (Select multiple)</label>
+            <div className="space-y-2">
+              <p className="text-xs text-gray-600 mb-3">Select all domains you're interested in or have skills in:</p>
+              <div className="grid grid-cols-1 gap-2">
+                {['Web Development', 'Video Editing', 'Graphic Designing', 'Content Writing'].map((domain) => (
+                  <label key={domain} className="flex items-center space-x-3 p-3 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={formData.domains.includes(domain)}
+                      onChange={() => handleDomainToggle(domain)}
+                      className="w-4 h-4 text-slate-900 border-gray-300 rounded focus:ring-slate-900 focus:ring-2"
+                    />
+                    <span className="text-sm font-medium text-gray-700">{domain}</span>
+                  </label>
+                ))}
+              </div>
+              {formData.domains.length > 0 && (
+                <div className="mt-3 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    <strong>Selected:</strong> {formData.domains.join(', ')}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex flex-col sm:flex-row justify-between gap-4">
@@ -188,7 +207,7 @@ const SignIn = ({ onSignInSuccess }) => {
                 value={formData.password}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+                className="w-full px-4 py-3 border-2 text-black border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
               />
             </div>
 

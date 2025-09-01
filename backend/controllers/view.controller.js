@@ -16,9 +16,10 @@ const getTaskById = async (req, res) => {
 
         let query = Task.findById(id);
         
-        // Security: User can only view tasks from their domain
+        // Security: User can only view tasks from their domains
         const userDomain = req.user.domain;
-        query = query.where('domain').equals(userDomain);
+        const userDomains = req.user.domains || [userDomain].filter(Boolean);
+        query = query.where('domain').in(userDomains);
 
         // Apply field selection
         if (fields) {

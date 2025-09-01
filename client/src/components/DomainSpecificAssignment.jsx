@@ -27,6 +27,8 @@ const DomainSpecificAssignment = ({
   // Fetch filter options on mount
   useEffect(() => {
     fetchFilterOptions();
+    // Also fetch users initially for individual mode
+    fetchAllUsers();
   }, []);
 
   // Fetch users when filters change
@@ -46,7 +48,8 @@ const DomainSpecificAssignment = ({
       const filtered = users.filter(user =>
         user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.domain.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.domain?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (user.domains || []).some(d => d.toLowerCase().includes(searchTerm.toLowerCase())) ||
         user.role.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredUsers(filtered);
@@ -79,6 +82,8 @@ const DomainSpecificAssignment = ({
     try {
       const token = localStorage.getItem('accessToken');
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      console.log(' Fetching all users from:', `${apiUrl}/api/tasks/users`);
+      
       const response = await fetch(`${apiUrl}/api/tasks/users`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -89,10 +94,15 @@ const DomainSpecificAssignment = ({
 
       if (response.ok) {
         const data = await response.json();
+        console.log(' Fetched users successfully:', data.users?.length || 0);
         setUsers(data.users || []);
+      } else {
+        console.error(' Failed to fetch users:', response.status, response.statusText);
+        const errorText = await response.text();
+        console.error('Response:', errorText);
       }
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error(' Error fetching users:', error);
     } finally {
       setLoading(false);
     }
@@ -192,7 +202,10 @@ const DomainSpecificAssignment = ({
         <div className="flex items-center space-x-4">
           <button
             type="button"
-            onClick={() => setFilterMode('individual')}
+            onClick={() => {
+              console.log(' Switching to individual mode');
+              setFilterMode('individual');
+            }}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               filterMode === 'individual'
                 ? 'bg-status-accepted text-white'
@@ -204,7 +217,10 @@ const DomainSpecificAssignment = ({
           </button>
           <button
             type="button"
-            onClick={() => setFilterMode('group')}
+            onClick={() => {
+              console.log(' Switching to group mode');
+              setFilterMode('group');
+            }}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               filterMode === 'group'
                 ? 'bg-status-accepted text-white'
@@ -236,7 +252,7 @@ const DomainSpecificAssignment = ({
               <select
                 value={filters.domain}
                 onChange={(e) => handleFilterChange('domain', e.target.value)}
-                className="w-full px-3 py-2 border border-border-primary rounded-lg focus:ring-2 focus:ring-status-accepted focus:border-status-accepted"
+                className="w-full px-3 py-2 border border-border-primary rounded-lg focus:ring-2 text-white bg-[#00043C] focus:ring-status-accepted focus:border-status-accepted"
                 disabled={filters.domains.length > 0}
               >
                 <option value="all">All Domains</option>
@@ -252,7 +268,7 @@ const DomainSpecificAssignment = ({
               <select
                 value={filters.role}
                 onChange={(e) => handleFilterChange('role', e.target.value)}
-                className="w-full px-3 py-2 border border-border-primary rounded-lg focus:ring-2 focus:ring-status-accepted focus:border-status-accepted"
+                className="w-full px-3 py-2 border border-border-primary rounded-lg text-white focus:ring-2 bg-[#00043C] focus:ring-status-accepted focus:border-status-accepted"
                 disabled={filters.roles.length > 0}
               >
                 <option value="all">All Years</option>
@@ -379,7 +395,7 @@ const DomainSpecificAssignment = ({
                     {user.name}
                   </p>
                   <p className="text-sm text-text-muted">
-                    {user.role} • {user.domain} • {user.email}
+                    {user.role} • {(user.domains || [user.domain].filter(Boolean)).join(', ')} • {user.email}
                   </p>
                 </div>
               </div>

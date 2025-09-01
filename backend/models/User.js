@@ -26,10 +26,22 @@ const userSchema = new Schema({
         enum: ['1st Year', '2nd Year', '3rd Year', '4th Year'],
         required: true
     },
+    domains: {
+        type: [String],
+        enum: ['Web Development', 'Content Writing', 'Graphic Designing', 'Video Editing', 'General'],
+        required: true,
+        validate: {
+            validator: function(v) {
+                return v && v.length > 0;
+            },
+            message: 'At least one domain must be selected'
+        }
+    },
+    // Keep the old domain field for backward compatibility (can be removed later)
     domain: {
         type: String,
         enum: ['Web Development', 'Content Writing', 'Graphic Designing', 'Video Editing', 'General'],
-        required: true
+        required: false
     },
     avatar: {
         type: String,
@@ -87,7 +99,8 @@ userSchema.methods.generateAccessToken = function () {
             email: this.email,
             name: this.name,
             role: this.role,
-            domain: this.domain
+            domain: this.domain,
+            domains: this.domains // Include domains array in token
         },
         process.env.ACCESS_TOKEN_SECRET,
         { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || "1d" }

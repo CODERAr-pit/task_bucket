@@ -1,439 +1,160 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Filter, ChevronDown, Check, X } from 'lucide-react';
+import { Users, Filter, ChevronDown, Check, X, Search } from 'lucide-react';
 
-const DomainSpecificAssignment = ({
-                                      selectedUsers = [],
-                                      onUsersChange,
-                                      className = ""
-                                  }) => {
-    const [filterMode, setFilterMode] = useState('individual'); // 'individual' or 'group'
-    const [filters, setFilters] = useState({
-        domain: 'all',
-        role: 'all',
-        roles: [],
-        domains: []
-    });
+const DomainSpecificAssignment = ({ selectedUsers = [], onUsersChange, className = "" }) => {
+    const [filterMode, setFilterMode] = useState('individual');
+    const [filters, setFilters] = useState({ roles: [], domains: [] });
     const [users, setUsers] = useState([]);
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [filterOptions, setFilterOptions] = useState({
-        domains: [],
-        roles: [],
-        combinations: []
+        domains: ["Web Development", "Graphic Designing", "Video Editing", "Content Writing"],
+        roles: ["1st Year", "2nd Year", "3rd Year", "4th Year"]
     });
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [showFilters, setShowFilters] = useState(false);
 
-    // Fetch filter options on mount
     useEffect(() => {
         fetchFilterOptions();
     }, []);
 
-    // Fetch users when filters change
     useEffect(() => {
-        if (filterMode === 'group') {
-            fetchFilteredUsers();
-        } else {
-            fetchAllUsers();
-        }
-    }, [filters, filterMode]);
+        fetchFilteredUsers();
+    }, [filters]);
 
-    // Apply search filter
     useEffect(() => {
         if (searchTerm.trim() === '') {
             setFilteredUsers(users);
         } else {
+            const lowerCaseSearch = searchTerm.toLowerCase();
             const filtered = users.filter(user =>
-                user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                user.domain.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                user.role.toLowerCase().includes(searchTerm.toLowerCase())
+                user.name.toLowerCase().includes(lowerCaseSearch) ||
+                user.email.toLowerCase().includes(lowerCaseSearch)
             );
             setFilteredUsers(filtered);
         }
     }, [users, searchTerm]);
 
-    const fetchFilterOptions = async () => {
-        try {
-            const token = localStorage.getItem('accessToken');
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-            const response = await fetch(`${apiUrl}/api/tasks/users/filter-options`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include'
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                setFilterOptions(data);
-            }
-        } catch (error) {
-            console.error('Error fetching filter options:', error);
-        }
+    const fetchAPI = async (endpoint) => {
+        const token = localStorage.getItem('accessToken');
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        const response = await fetch(`${apiUrl}${endpoint}`, {
+            headers: { 'Authorization': `Bearer ${token}` },
+            credentials: 'include'
+        });
+        if (response.ok) return response.json();
+        throw new Error(`Failed to fetch from ${endpoint}`);
     };
 
-    const fetchAllUsers = async () => {
-        setLoading(true);
+    const fetchFilterOptions = async () => {
         try {
-            const token = localStorage.getItem('accessToken');
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-            const response = await fetch(`${apiUrl}/api/tasks/users`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include'
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                setUsers(data.users || []);
+            const data = await fetchAPI('/api/tasks/users/filter-options');
+            if (data.domains?.length > 0 && data.roles?.length > 0) {
+                setFilterOptions(data);
             }
-        } catch (error) {
-            console.error('Error fetching users:', error);
-        } finally {
-            setLoading(false);
-        }
+        } catch (error) { console.error('Error fetching filter options, using defaults:', error); }
     };
 
     const fetchFilteredUsers = async () => {
         setLoading(true);
         try {
-            const token = localStorage.getItem('accessToken');
             const params = new URLSearchParams();
-
-            if (filters.domain !== 'all') params.append('domain', filters.domain);
-            if (filters.role !== 'all') params.append('role', filters.role);
             if (filters.roles.length > 0) params.append('roles', filters.roles.join(','));
             if (filters.domains.length > 0) params.append('domains', filters.domains.join(','));
 
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-            const response = await fetch(`${apiUrl}/api/tasks/users/filtered?${params}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include'
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                setUsers(data.users || []);
-            }
-        } catch (error) {
-            console.error('Error fetching filtered users:', error);
-        } finally {
-            setLoading(false);
-        }
+            const endpoint = `/api/tasks/users/filtered?${params}`;
+            const data = await fetchAPI(endpoint);
+            setUsers(data.users || []);
+        } catch (error) { console.error('Error fetching filtered users:', error); }
+        finally { setLoading(false); }
     };
 
-    const handleFilterChange = (filterType, value) => {
-        setFilters(prev => ({
-            ...prev,
-            [filterType]: value
-        }));
-    };
-
-    const handleRoleToggle = (role) => {
-        setFilters(prev => ({
-            ...prev,
-            roles: prev.roles.includes(role)
-                ? prev.roles.filter(r => r !== role)
-                : [...prev.roles, role]
-        }));
-    };
-
-    const handleDomainToggle = (domain) => {
-        setFilters(prev => ({
-            ...prev,
-            domains: prev.domains.includes(domain)
-                ? prev.domains.filter(d => d !== domain)
-                : [...prev.domains, domain]
+    const toggleFilterOption = (type, value) => {
+        setFilters(p => ({
+            ...p,
+            [type]: p[type].includes(value) ? p[type].filter(v => v !== value) : [...p[type], value]
         }));
     };
 
     const toggleUser = (userId) => {
-        const newSelection = selectedUsers.includes(userId)
-            ? selectedUsers.filter(id => id !== userId)
-            : [...selectedUsers, userId];
-        onUsersChange(newSelection);
+        if (filterMode === 'individual') {
+            const newSelection = selectedUsers[0] === userId ? [] : [userId];
+            onUsersChange(newSelection);
+        } else {
+            const newSelection = selectedUsers.includes(userId) ? selectedUsers.filter(id => id !== userId) : [...selectedUsers, userId];
+            onUsersChange(newSelection);
+        }
     };
 
-    const selectAllFiltered = () => {
-        const allFilteredIds = filteredUsers.map(user => user.id);
-        const newSelection = [...new Set([...selectedUsers, ...allFilteredIds])];
-        onUsersChange(newSelection);
-    };
-
-    const deselectAllFiltered = () => {
-        const filteredIds = new Set(filteredUsers.map(user => user.id));
-        const newSelection = selectedUsers.filter(id => !filteredIds.has(id));
-        onUsersChange(newSelection);
-    };
-
-    const getFilterSummary = () => {
-        if (filterMode === 'individual') return 'Showing all users';
-
-        let parts = [];
-        if (filters.domain !== 'all') parts.push(`Domain: ${filters.domain}`);
-        if (filters.domains.length > 0) parts.push(`Domains: ${filters.domains.join(', ')}`);
-        if (filters.role !== 'all') parts.push(`Role: ${filters.role}`);
-        if (filters.roles.length > 0) parts.push(`Roles: ${filters.roles.join(', ')}`);
-
-        return parts.length > 0 ? parts.join(' | ') : 'No filters applied';
-    };
+    const selectAllFiltered = () => onUsersChange([...new Set([...selectedUsers, ...filteredUsers.map(u => u._id || u.id)])]);
+    const deselectAllFiltered = () => onUsersChange(selectedUsers.filter(id => !filteredUsers.find(u => (u._id || u.id) === id)));
 
     return (
-        <div className={`space-y-4 ${className}`}>
-            {/* Mode Toggle */}
+        <div className={`space-y-4 p-4 bg-surface border border-border rounded-lg ${className}`}>
             <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                    <button
-                        type="button"
-                        onClick={() => setFilterMode('individual')}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                            filterMode === 'individual'
-                                ? 'bg-status-accepted text-black/90'
-                                : 'bg-bg-secondary text-text-body hover:bg-bg-secondary/80'
-                        }`}
-                    >
-                        <Users className="w-4 h-4 inline mr-2" />
-                        Individual Selection
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setFilterMode('group')}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                            filterMode === 'group'
-                                ? 'bg-status-accepted text-black/90'
-                                : 'bg-bg-secondary text-text-body hover:bg-bg-secondary/80'
-                        }`}
-                    >
-                        <Filter className="w-4 h-4 inline mr-2" />
-                        Group Selection
-                    </button>
+                <div className="flex items-center p-1 bg-background rounded-lg border border-border">
+                    <button type="button" onClick={() => setFilterMode('individual')} className={`px-3 py-1.5 rounded-md text-sm font-semibold transition-colors ${filterMode === 'individual' ? 'bg-primary text-white' : 'text-text-secondary hover:text-text-primary'}`}>Individual</button>
+                    <button type="button" onClick={() => setFilterMode('group')} className={`px-3 py-1.5 rounded-md text-sm font-semibold transition-colors ${filterMode === 'group' ? 'bg-primary text-white' : 'text-text-secondary hover:text-text-primary'}`}>Group</button>
                 </div>
-                <button
-                    type="button"
-                    onClick={() => setShowFilters(!showFilters)}
-                    className="flex items-center space-x-2 px-3 py-2 text-sm text-text-body hover:text-text-heading transition-colors"
-                >
-                    <Filter className="w-4 h-4" />
-                    <span>Filters</span>
-                    <ChevronDown className={`w-4 h-4 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+                <button type="button" onClick={() => setShowFilters(!showFilters)} className="flex items-center gap-2 px-3 py-2 text-sm text-text-secondary hover:text-text-primary transition-colors">
+                    <Filter size={16} /><span>Filters</span><ChevronDown className={`transition-transform ${showFilters ? 'rotate-180' : ''}`} size={16} />
                 </button>
             </div>
 
-            {/* Filters Panel */}
-            {showFilters && filterMode === 'group' && (
-                <div className="bg-bg-secondary rounded-lg p-4 space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Domain Filter */}
-                        <div>
-                            <label className="block text-sm font-medium text-text-body mb-2">Domain</label>
-                            <select
-                                value={filters.domain}
-                                onChange={(e) => handleFilterChange('domain', e.target.value)}
-                                className="w-full px-3 py-2 border border-border-primary rounded-lg focus:ring-2 focus:ring-status-accepted focus:border-status-accepted"
-                                disabled={filters.domains.length > 0}
-                            >
-                                <option value="all">All Domains</option>
-                                {filterOptions.domains.map(domain => (
-                                    <option key={domain} value={domain}>{domain}</option>
-                                ))}
-                            </select>
-                        </div>
-
-                        {/* Single Role Filter */}
-                        <div>
-                            <label className="block text-sm font-medium text-text-body mb-2">Year/Batch</label>
-                            <select
-                                value={filters.role}
-                                onChange={(e) => handleFilterChange('role', e.target.value)}
-                                className="w-full px-3 py-2 border border-border-primary rounded-lg focus:ring-2 focus:ring-status-accepted focus:border-status-accepted"
-                                disabled={filters.roles.length > 0}
-                            >
-                                <option value="all">All Years</option>
-                                {filterOptions.roles.map(role => (
-                                    <option key={role} value={role}>{role}</option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-
-                    {/* Multiple Domains Filter */}
+            {showFilters && (
+                <div className="bg-background rounded-lg p-4 space-y-4 border border-border">
                     <div>
-                        <label className="block text-sm font-medium text-text-body mb-2">
-                            Multiple Domains (overrides single domain selection)
-                        </label>
-                        <div className="flex flex-wrap gap-2">
-                            {filterOptions.domains.map(domain => (
-                                <button
-                                    key={domain}
-                                    type="button"
-                                    onClick={() => handleDomainToggle(domain)}
-                                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                                        filters.domains && filters.domains.includes(domain)
-                                            ? 'bg-status-accepted text-white'
-                                            : 'bg-bg-primary border border-border-primary text-text-body hover:bg-bg-secondary'
-                                    }`}
-                                >
-                                    {domain}
-                                </button>
-                            ))}
-                        </div>
+                        <label className="block text-xs font-bold text-text-secondary uppercase mb-2">Filter by Domain(s)</label>
+                        <div className="flex flex-wrap gap-2">{filterOptions.domains.map(d => (<button key={d} type="button" onClick={() => toggleFilterOption('domains', d)} className={`px-3 py-1 rounded-full text-xs font-semibold ${filters.domains.includes(d) ? 'bg-primary text-white' : 'bg-surface hover:bg-border text-text-primary'}`}>{d}</button>))}</div>
                     </div>
-
-                    {/* Multiple Roles Filter */}
                     <div>
-                        <label className="block text-sm font-medium text-text-body mb-2">
-                            Multiple Years (overrides single year selection)
-                        </label>
-                        <div className="flex flex-wrap gap-2">
-                            {filterOptions.roles.map(role => (
-                                <button
-                                    key={role}
-                                    type="button"
-                                    onClick={() => handleRoleToggle(role)}
-                                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                                        filters.roles.includes(role)
-                                            ? 'bg-status-accepted text-white'
-                                            : 'bg-bg-primary border border-border-primary text-text-body hover:bg-bg-secondary'
-                                    }`}
-                                >
-                                    {role}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Filter Summary */}
-                    <div className="text-sm text-text-muted">
-                        {getFilterSummary()} • Found {filteredUsers.length} users
+                        <label className="block text-xs font-bold text-text-secondary uppercase mb-2">Filter by Year(s)</label>
+                        <div className="flex flex-wrap gap-2">{filterOptions.roles.map(r => (<button key={r} type="button" onClick={() => toggleFilterOption('roles', r)} className={`px-3 py-1 rounded-full text-xs font-semibold ${filters.roles.includes(r) ? 'bg-primary text-white' : 'bg-surface hover:bg-border text-text-primary'}`}>{r}</button>))}</div>
                     </div>
                 </div>
             )}
 
-            {/* Search Bar */}
             <div className="relative">
-                <input
-                    type="text"
-                    placeholder="Search users by name, email, domain, or year..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-border-primary rounded-xl focus:ring-2 focus:ring-status-accepted focus:border-status-accepted bg-bg-primary"
-                />
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Users className="h-5 w-5 text-text-muted" />
-                </div>
+                <input type="text" placeholder="Search users by name or email..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-text-primary placeholder:text-text-secondary/60 focus:outline-none focus:ring-2 focus:ring-primary transition-all" />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><Search className="h-5 w-5 text-text-secondary" /></div>
             </div>
 
-            {/* Bulk Actions */}
-            {filteredUsers.length > 0 && (
+            {filterMode === 'group' && filteredUsers.length > 0 && (
                 <div className="flex items-center justify-between text-sm">
-          <span className="text-text-muted">
-            {filteredUsers.length} users found • {selectedUsers.length} selected
-          </span>
+                    <span className="text-text-secondary">{filteredUsers.length} users found</span>
                     <div className="space-x-2">
-                        <button
-                            type="button"
-                            onClick={selectAllFiltered}
-                            className="text-status-accepted hover:text-status-accepted/80 font-medium"
-                        >
-                            Select All Visible
-                        </button>
-                        <span className="text-text-muted">|</span>
-                        <button
-                            type="button"
-                            onClick={deselectAllFiltered}
-                            className="text-status-declined hover:text-status-declined/80 font-medium"
-                        >
-                            Deselect All Visible
-                        </button>
+                        <button type="button" onClick={selectAllFiltered} className="text-primary hover:text-primary-hover font-semibold">Select Visible</button>
+                        <span className="text-border">|</span>
+                        <button type="button" onClick={deselectAllFiltered} className="text-text-secondary hover:text-text-primary font-semibold">Deselect Visible</button>
                     </div>
                 </div>
             )}
 
-            {/* User List */}
-            <div className="space-y-2 max-h-80 overflow-y-auto border border-border-primary rounded-xl">
-                {loading ? (
-                    <div className="p-8 text-center text-text-muted">
-                        <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-status-accepted"></div>
-                        <p className="mt-2">Loading users...</p>
-                    </div>
-                ) : filteredUsers.length > 0 ? (
-                    filteredUsers.map((user) => (
-                        <div
-                            key={user.id}
-                            onClick={() => toggleUser(user.id)}
-                            className={`flex items-center justify-between p-4 cursor-pointer transition-colors hover:bg-bg-secondary ${
-                                selectedUsers.includes(user.id) ? 'bg-status-accepted/10 border-l-4 border-status-accepted' : ''
-                            }`}
-                        >
-                            <div className="flex items-center space-x-3">
-                                <div className={`w-3 h-3 rounded-full ${selectedUsers.includes(user.id) ? 'bg-status-accepted' : 'bg-bg-secondary border-2 border-border-primary'}`} />
+            <div className="space-y-1 max-h-60 overflow-y-auto border border-border rounded-lg bg-background p-1">
+                {loading ? <div className="p-8 text-center text-text-secondary">Loading...</div> :
+                    filteredUsers.length > 0 ? filteredUsers.map((user) => (
+                        <div key={user._id || user.id} onClick={() => toggleUser(user._id || user.id)} className={`flex items-center justify-between p-2 cursor-pointer rounded-md transition-colors ${selectedUsers.includes(user._id || user.id) ? 'bg-primary/10' : 'hover:bg-border'}`}>
+                            <div className="flex items-center gap-3">
+                                <div className={`w-4 h-4 rounded-full flex items-center justify-center border-2 ${selectedUsers.includes(user._id || user.id) ? 'bg-primary border-primary' : 'border-border'}`}>{selectedUsers.includes(user._id || user.id) && <Check size={10} className="text-white" />}</div>
                                 <div>
-                                    <p className={`font-medium ${selectedUsers.includes(user.id) ? 'text-text-heading' : 'text-text-body'}`}>
-                                        {user.name}
-                                    </p>
-                                    <p className="text-sm text-text-muted">
-                                        {user.role} • {user.domain} • {user.email}
-                                    </p>
+                                    <p className={`font-semibold text-sm ${selectedUsers.includes(user._id || user.id) ? 'text-primary' : 'text-text-primary'}`}>{user.name}</p>
+                                    <p className="text-xs text-text-secondary">{user.role} • {user.domains.join(', ')}</p>
                                 </div>
                             </div>
-                            {selectedUsers.includes(user.id) && (
-                                <Check className="w-5 h-5 text-status-accepted" />
-                            )}
                         </div>
-                    ))
-                ) : (
-                    <div className="p-8 text-center text-text-muted">
-                        <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                        <p>No users found matching your criteria</p>
-                    </div>
-                )}
+                    )) : <div className="p-8 text-center text-text-secondary text-sm">No users found.</div>}
             </div>
 
-            {/* Selected Users Summary */}
             {selectedUsers.length > 0 && (
-                <div className="bg-bg-secondary rounded-lg p-4">
+                <div className="bg-background rounded-lg p-3 border border-border">
                     <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium text-text-heading">
-                            Selected Users ({selectedUsers.length})
-                        </h4>
-                        <button
-                            type="button"
-                            onClick={() => onUsersChange([])}
-                            className="text-status-declined hover:text-status-declined/80 text-sm font-medium"
-                        >
-                            Clear All
-                        </button>
+                        <h4 className="font-semibold text-text-primary text-sm">Selected ({selectedUsers.length})</h4>
+                        <button type="button" onClick={() => onUsersChange([])} className="text-red-400 hover:text-red-300 text-xs font-semibold">CLEAR ALL</button>
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-1.5">
                         {selectedUsers.map(userId => {
-                            const user = users.find(u => u.id === userId) || filteredUsers.find(u => u.id === userId);
-                            if (!user) return null;
-
-                            return (
-                                <span
-                                    key={userId}
-                                    className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-status-accepted/20 text-status-accepted border border-status-accepted/30"
-                                >
-                  {user.name} ({user.role})
-                  <button
-                      type="button"
-                      onClick={(e) => {
-                          e.stopPropagation();
-                          toggleUser(userId);
-                      }}
-                      className="ml-2 text-status-accepted/70 hover:text-status-accepted"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
-                            );
+                            const user = users.find(u => (u._id || u.id) === userId);
+                            return user ? (<span key={userId} className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-primary/20 text-primary">{user.name}<button type="button" onClick={(e) => { e.stopPropagation(); toggleUser(userId); }} className="ml-1.5 text-primary/70 hover:text-primary"><X size={12} /></button></span>) : null;
                         })}
                     </div>
                 </div>

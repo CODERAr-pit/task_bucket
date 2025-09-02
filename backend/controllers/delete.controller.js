@@ -1,5 +1,6 @@
 import { Task } from "../models/Task.js";
 import { canViewTask } from "../utils/visibility.js";
+import { canDeleteTask } from "../utils/permissions.js";
 
 // Delete existing task
 const deleteTask = async (req, res) => {
@@ -13,8 +14,8 @@ const deleteTask = async (req, res) => {
             });
         }
 
-        // Find existing task
-        const existingTask = await Task.findById(id);
+        // Find existing task with taskMaker populated
+        const existingTask = await Task.findById(id).populate('taskMaker');
         if (!existingTask) {
             return res.status(404).json({
                 error: 'Task not found'
@@ -28,24 +29,12 @@ const deleteTask = async (req, res) => {
             });
         }
 
-        // Security: User can only delete tasks in their domain
-        const userDomain = req.user.domain;
-        if (existingTask.domain !== userDomain) {
+        // Year-based permission check (removed domain restriction)
+        // Users can delete tasks created by their year or juniors, but not seniors
+        // This applies across all domains
+        if (!canDeleteTask(req.user, existingTask.taskMaker)) {
             return res.status(403).json({
-                error: 'You can only delete tasks in your domain'
-            });
-        }
-
-        // Additional permission check
-        // Only allow task creator, assigned user, or senior to delete
-        const userId = req.user._id.toString();
-        const isTaskCreator = existingTask.taskMaker && existingTask.taskMaker.toString() === userId;
-        const isAssignedUser = existingTask.assignedTo && existingTask.assignedTo.toString() === userId;
-        const isSenior = req.user.role === 'senior';
-
-        if (!isTaskCreator && !isAssignedUser && !isSenior) {
-            return res.status(403).json({
-                error: 'You do not have permission to delete this task'
+                error: 'You can only delete tasks created by your year or juniors. Cannot delete tasks created by seniors.'
             });
         }
 
@@ -88,31 +77,19 @@ const softDeleteTask = async (req, res) => {
             });
         }
 
-        // Find existing task
-        const existingTask = await Task.findById(id);
+        // Find existing task with taskMaker populated
+        const existingTask = await Task.findById(id).populate('taskMaker');
         if (!existingTask) {
             return res.status(404).json({
                 error: 'Task not found'
             });
         }
 
-        // Security checks
-        const userDomain = req.user.domain;
-        if (existingTask.domain !== userDomain) {
+        // Year-based permission check (removed domain restriction)
+        // Users can delete tasks created by their year or juniors across all domains
+        if (!canDeleteTask(req.user, existingTask.taskMaker)) {
             return res.status(403).json({
-                error: 'You can only delete tasks in your domain'
-            });
-        }
-
-        // Permission checks
-        const userId = req.user._id.toString();
-        const isTaskCreator = existingTask.taskMaker && existingTask.taskMaker.toString() === userId;
-        const isAssignedUser = existingTask.assignedTo && existingTask.assignedTo.toString() === userId;
-        const isSenior = req.user.role === 'senior';
-
-        if (!isTaskCreator && !isAssignedUser && !isSenior) {
-            return res.status(403).json({
-                error: 'You do not have permission to delete this task'
+                error: 'You can only delete tasks created by your year or juniors. Cannot delete tasks created by seniors.'
             });
         }
 
@@ -157,8 +134,8 @@ const bulkDeleteTasks = async (req, res) => {
             });
         }
 
-        // Find all tasks
-        const tasks = await Task.find({ _id: { $in: ids } });
+        // Find all tasks with taskMaker populated
+        const tasks = await Task.find({ _id: { $in: ids } }).populate('taskMaker');
         
         if (tasks.length === 0) {
             return res.status(404).json({
@@ -166,25 +143,18 @@ const bulkDeleteTasks = async (req, res) => {
             });
         }
 
-        const userDomain = req.user.domain;
-        const userId = req.user._id.toString();
-        const isSenior = req.user.role === 'senior';
-
-        // Check permissions for each task
+        // Check permissions for each task using year-based system (removed domain restriction)
+        // Users can delete tasks created by their year or juniors across all domains
         const unauthorizedTasks = tasks.filter(task => {
-            if (task.domain !== userDomain) return true;
+            // Check year-based delete permission only
+            if (!canDeleteTask(req.user, task.taskMaker)) return true;
             
-            if (isSenior) return false;
-            
-            const isTaskCreator = task.taskMaker && task.taskMaker.toString() === userId;
-            const isAssignedUser = task.assignedTo && task.assignedTo.toString() === userId;
-            
-            return !isTaskCreator && !isAssignedUser;
+            return false;
         });
 
         if (unauthorizedTasks.length > 0) {
             return res.status(403).json({
-                error: 'You do not have permission to delete some tasks',
+                error: 'You do not have permission to delete some tasks. You can only delete tasks created by your year or juniors.',
                 unauthorizedTaskIds: unauthorizedTasks.map(task => task._id)
             });
         }

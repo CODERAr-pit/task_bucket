@@ -193,7 +193,12 @@ export const TaskProvider = ({ children }) => {
             
             const data = await response.json();
             const tasksArray = data.items || data.tasks || data;
-            setTasks(tasksArray);
+            const normalizedTasks = tasksArray.map(task => ({
+                ...task,
+                id: task.id || task._id, 
+                _id: task._id || task.id  
+            }));
+            setTasks(normalizedTasks);
             return data;
         } catch (err) {
             setError(err.message);
@@ -221,7 +226,10 @@ export const TaskProvider = ({ children }) => {
             }
             
             const result = await response.json();
-            const newTask = result.data || result; // Backend returns {message, data}
+            const newTask = result.data || result;
+            if (newTask && !newTask.id && newTask._id) {
+                newTask.id = newTask._id;
+            }
             setTasks(prev => [...prev, newTask]);
             return newTask;
         } catch (err) {
@@ -253,6 +261,9 @@ export const TaskProvider = ({ children }) => {
             
             const result = await response.json();
             const updatedTask = result.data || result; // Backend returns {message, data}
+            if (updatedTask && !updatedTask.id && updatedTask._id) {
+                updatedTask.id = updatedTask._id;
+            }
             setTasks(prev => prev.map(task => (task.id === id || task._id === id) ? updatedTask : task));
             return updatedTask;
         } catch (err) {
@@ -277,6 +288,7 @@ export const TaskProvider = ({ children }) => {
             
             if (!response.ok) {
                 const errorData = await response.json();
+                console.error('TaskContext: Delete failed:', errorData);
                 throw new Error(errorData.error || `Failed to delete task: ${response.status}`);
             }
             

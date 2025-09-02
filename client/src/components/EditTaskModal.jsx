@@ -3,7 +3,7 @@ import { X, Search } from 'lucide-react';
 import { useTaskContext } from '../context/TaskContext';
 import { canUserEditTask } from '../utils/permissions';
 
-const EditTaskModal = ({ isOpen, onClose, task, permissions }) => {
+const EditTaskModal = ({ isOpen, onClose, task, permissions, onUpdate }) => {
     const { updateTask } = useTaskContext();
     const [users, setUsers] = useState([]);
     const [loadingUsers, setLoadingUsers] = useState(false);
@@ -40,16 +40,30 @@ const EditTaskModal = ({ isOpen, onClose, task, permissions }) => {
 
     useEffect(() => {
         if (task && isOpen) {
-            setForm({
+            // Handle assignedTo field properly - extract IDs from objects if needed
+            let assignedToIds = [];
+            if (Array.isArray(task.assignedTo)) {
+                assignedToIds = task.assignedTo.map(user => 
+                    typeof user === 'object' && user !== null ? (user._id || user.id) : user
+                ).filter(Boolean);
+            } else if (task.assignedTo) {
+                const assignedUser = task.assignedTo;
+                const userId = typeof assignedUser === 'object' ? (assignedUser._id || assignedUser.id) : assignedUser;
+                if (userId) assignedToIds = [userId];
+            }
+
+            const formData = {
                 title: task.title || '',
                 description: task.description || '',
-                assignedTo: Array.isArray(task.assignedTo) ? task.assignedTo : (task.assignedTo ? [task.assignedTo] : []),
+                assignedTo: assignedToIds,
                 domain: task.domain || '',
                 dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
                 status: task.status || 'todo',
                 priority: task.priority || 'medium',
                 visibility: task.visibility || 'public'
-            });
+            };
+            
+            setForm(formData);
         }
     }, [task, isOpen]);
 
@@ -94,10 +108,20 @@ const EditTaskModal = ({ isOpen, onClose, task, permissions }) => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            await updateTask(task.id || task._id, form);
+            const taskId = task._id || task.id;
+            if (!taskId) {
+                throw new Error('Task ID not found');
+            }
+            
+            if (onUpdate) {
+                await onUpdate(taskId, form);
+            } else {
+                await updateTask(taskId, form);
+            }
             onClose();
         } catch (error) {
             console.error('Error updating task:', error);
+            alert(error.message || 'Failed to update task');
         } finally {
             setIsSubmitting(false);
         }

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { X, Calendar, Clock, User, Tag, AlertCircle, FileText, Send, Trash2 } from 'lucide-react';
+import { canUserEditTask, canUserDeleteTask } from '../utils/permissions';
 
-const TaskDetailsModal = ({ task, currentUser, isOpen, onClose, onUpdate, onDelete }) => {
+const TaskDetailsModal = ({ task, currentUser, isOpen, onClose, onUpdate, onDelete, permissions }) => {
     const [comments, setComments] = useState([]);
     const [loadingComments, setLoadingComments] = useState(false);
     const [commentText, setCommentText] = useState('');
@@ -177,8 +178,12 @@ const TaskDetailsModal = ({ task, currentUser, isOpen, onClose, onUpdate, onDele
                 {/* Footer Actions */}
                 <div className="px-6 py-4 bg-background border-t border-border flex gap-3 justify-end flex-shrink-0">
                     <button onClick={onClose} className="px-4 py-2 text-text-primary bg-surface border border-border rounded-lg hover:bg-border transition-colors">Close</button>
-                    <button onClick={() => onUpdate?.(task)} className="px-4 py-2 bg-primary text-white font-bold rounded-lg hover:bg-primary-hover transition-colors">Edit Task</button>
-                    <button onClick={() => { if (confirm('Are you sure you want to delete this task?')) { onDelete?.(task.id || task._id); onClose(); } }} className="p-2 text-red-400 bg-surface border border-border rounded-lg hover:bg-red-900/40 hover:border-red-700/50 transition-colors"><Trash2 size={20} /></button>
+                    {canUserEditTask(permissions) && (
+                        <button onClick={() => onUpdate?.(task)} className="px-4 py-2 bg-primary text-white font-bold rounded-lg hover:bg-primary-hover transition-colors">Edit Task</button>
+                    )}
+                    {canUserDeleteTask(permissions) && (
+                        <button onClick={() => { if (confirm('Are you sure you want to delete this task?')) { onDelete?.(task.id || task._id); onClose(); } }} className="p-2 text-red-400 bg-surface border border-border rounded-lg hover:bg-red-900/40 hover:border-red-700/50 transition-colors"><Trash2 size={20} /></button>
+                    )}
                 </div>
             </div>
         </div>

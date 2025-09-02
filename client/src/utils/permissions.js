@@ -2,21 +2,16 @@
 
 export const fetchTaskPermissions = async (taskId) => {
     try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('accessToken');
         if (!token) {
-            const accessToken = localStorage.getItem('accessToken');
-            if (!accessToken) {
-                throw new Error('No authentication token found');
-            }
+            throw new Error('No authentication token found');
         }
-
-        const authToken = localStorage.getItem('token') || localStorage.getItem('accessToken');
 
         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
         const response = await fetch(`${apiUrl}/api/tasks/${taskId}/permissions`, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${authToken}`,
+                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             }
         });
@@ -32,6 +27,7 @@ export const fetchTaskPermissions = async (taskId) => {
         return {
             canEdit: false,
             canUpdateStatus: true, // Default: everyone can update status
+            canDelete: false,
             userRole: null,
             userRoleLevel: 0
         };
@@ -45,6 +41,11 @@ export const canUserEditTask = (permissions) => {
 
 export const canUserUpdateStatus = (permissions) => {
     return permissions?.canUpdateStatus !== false; // Default true if not specified
+};
+
+// Helper function to check if user can delete a task
+export const canUserDeleteTask = (permissions) => {
+    return permissions?.canDelete || false;
 };
 
 // Helper to get user role information

@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { UserPlus } from 'lucide-react';
 
 const SignIn = () => {
     const navigate = useNavigate();
@@ -42,15 +43,9 @@ const SignIn = () => {
         setIsSubmitting(true);
         setError('');
 
-        // Validation
         if (
-            !formData.firstName ||
-            !formData.lastName ||
-            !formData.email ||
-            !formData.number ||
-            !formData.role ||
-            !formData.domains.length ||
-            !formData.password
+            !formData.firstName || !formData.lastName || !formData.email ||
+            !formData.number || !formData.role || !formData.domains.length || !formData.password
         ) {
             setError('Please fill in all fields and select at least one domain.');
             setIsSubmitting(false);
@@ -77,141 +72,90 @@ const SignIn = () => {
             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
             const res = await fetch(`${apiUrl}/api/auth/register`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
                 body: JSON.stringify(registrationData)
             });
 
             if (res.ok) {
-                const data = await res.json();
-                console.log('Registration successful:', data);
-                alert('Registration successful!');
-                navigate('/login');
+                alert('Registration successful! Please sign in.');
+                navigate('/');
             } else {
                 const errorData = await res.json();
                 setError(errorData.message || 'Registration failed.');
             }
         } catch (err) {
-            console.error('Registration error:', err);
             setError('Network error. Please try again.');
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    return (
-        <div className="min-h-screen bg-neutral-900 grid lg:grid-cols-2">
+    const domainOptions = ['Web Development', 'Video Editing', 'Graphic Designing', 'Content Writing'];
 
+    return (
+        <div className="min-h-screen bg-background grid lg:grid-cols-2 font-sans">
             {/* Left Panel: Brand & Visuals */}
-            <div className="hidden lg:flex items-center justify-center p-12 bg-neutral-800">
-                <div className="text-center">
-                    <div className="mb-8">
-                        <img
-                            src="/image2.png"
-                            alt="EDC Logo"
-                            className="h-48 w-auto mx-auto mb-4"
-                        />
-                        <h1 className="text-4xl font-extrabold text-white tracking-tight">
-                            Join Our Community.
-                        </h1>
-                        <p className="text-neutral-400 mt-2 text-lg">
-                            Start assigning tasks and collaborating with your team today.
-                        </p>
-                    </div>
+            <div className="hidden lg:flex flex-col items-center justify-center p-12 bg-surface border-r border-border">
+                <div className="text-center max-w-md">
+                    <img src="/image2.png" alt="Company Logo" className="h-48 w-auto mx-auto mb-8" />
+                    <h1 className="text-4xl font-extrabold text-text-primary tracking-tight">Join Our Community.</h1>
+                    <p className="text-text-secondary mt-4 text-lg">Start assigning tasks and collaborating with your team today.</p>
                 </div>
             </div>
 
             {/* Right Panel: Sign Up Form */}
-            <div className="flex items-center justify-center p-8 lg:p-12 bg-white rounded-l-2xl shadow-2xl z-10">
-                <div className="w-full max-w-lg">
-
-                    {/* Mobile Header (for smaller screens) */}
-                    <div className="lg:hidden text-center mb-10">
-                        <img src="/edc.svg" alt="EDC Logo" className="h-12 w-auto mx-auto mb-4" />
-                        <h1 className="text-2xl font-bold text-neutral-800">Create Your Account</h1>
-                        <p className="text-neutral-500 mt-1">Get started in just a few steps.</p>
+            <div className="flex flex-col items-center justify-start lg:justify-center p-8 lg:p-12 overflow-y-auto">
+                <div className="w-full max-w-xl">
+                    {/* Mobile-only Header */}
+                    <div className="text-center mb-8 lg:hidden">
+                        <img src="/image2.png" alt="Company Logo" className="h-16 w-auto mx-auto mb-4" />
+                        <h1 className="text-3xl font-bold text-text-primary">Create Account</h1>
+                        <p className="text-text-secondary mt-2">Get started in just a few steps.</p>
                     </div>
 
-                    {/* Error Message */}
+                    {/* Desktop-only Header */}
+                    <div className="text-center mb-10 hidden lg:block">
+                        <h1 className="text-3xl font-bold text-text-primary">Create an Account</h1>
+                        <p className="text-text-secondary mt-2">Fill out the form to get started.</p>
+                    </div>
+
                     {error && (
-                        <div className="mb-6 bg-rose-50 border border-rose-200 rounded-lg p-3">
+                        <div className="mb-6 bg-red-800/40 border border-red-700/50 rounded-lg p-3">
                             <div className="flex items-center space-x-3">
-                                <svg className="w-5 h-5 text-rose-500" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                </svg>
-                                <p className="text-rose-700 font-medium text-sm">{error}</p>
+                                <svg className="w-5 h-5 text-red-300" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg>
+                                <p className="text-red-300 font-medium text-sm">{error}</p>
                             </div>
                         </div>
                     )}
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-5">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="flex flex-col">
-                                <label htmlFor="firstName" className="block text-sm font-semibold text-neutral-700 mb-1">First Name</label>
-                                <input
-                                    type="text"
-                                    id="firstName"
-                                    name="firstName"
-                                    value={formData.firstName}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-neutral-800 shadow-sm"
-                                />
+                            <div>
+                                <label htmlFor="firstName" className="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">First Name</label>
+                                <input type="text" id="firstName" name="firstName" value={formData.firstName} onChange={handleChange} required className="w-full px-4 py-3 bg-surface border border-border rounded-lg text-text-primary placeholder:text-text-secondary/60 focus:outline-none focus:ring-2 focus:ring-primary transition-all" />
                             </div>
-                            <div className="flex flex-col">
-                                <label htmlFor="lastName" className="block text-sm font-semibold text-neutral-700 mb-1">Last Name</label>
-                                <input
-                                    type="text"
-                                    id="lastName"
-                                    name="lastName"
-                                    value={formData.lastName}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-neutral-800 shadow-sm"
-                                />
+                            <div>
+                                <label htmlFor="lastName" className="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">Last Name</label>
+                                <input type="text" id="lastName" name="lastName" value={formData.lastName} onChange={handleChange} required className="w-full px-4 py-3 bg-surface border border-border rounded-lg text-text-primary placeholder:text-text-secondary/60 focus:outline-none focus:ring-2 focus:ring-primary transition-all" />
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="flex flex-col">
-                                <label htmlFor="email" className="block text-sm font-semibold text-neutral-700 mb-1">Email</label>
-                                <input
-                                    type="email"
-                                    id="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-neutral-800 shadow-sm"
-                                />
+                            <div>
+                                <label htmlFor="email" className="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">Email</label>
+                                <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} required className="w-full px-4 py-3 bg-surface border border-border rounded-lg text-text-primary placeholder:text-text-secondary/60 focus:outline-none focus:ring-2 focus:ring-primary transition-all" />
                             </div>
-                            <div className="flex flex-col">
-                                <label htmlFor="number" className="block text-sm font-semibold text-neutral-700 mb-1">Phone Number</label>
-                                <input
-                                    type="tel"
-                                    id="number"
-                                    name="number"
-                                    value={formData.number}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-neutral-800 shadow-sm"
-                                />
+                            <div>
+                                <label htmlFor="number" className="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">Phone Number</label>
+                                <input type="tel" id="number" name="number" value={formData.number} onChange={handleChange} required className="w-full px-4 py-3 bg-surface border border-border rounded-lg text-text-primary placeholder:text-text-secondary/60 focus:outline-none focus:ring-2 focus:ring-primary transition-all" />
                             </div>
                         </div>
 
                         <div>
-                            <label htmlFor="role" className="block text-sm font-semibold text-neutral-700 mb-1">Role</label>
-                            <select
-                                id="role"
-                                name="role"
-                                value={formData.role}
-                                onChange={handleChange}
-                                className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-neutral-800 shadow-sm"
-                                required
-                            >
-                                <option value="">Select Role</option>
+                            <label htmlFor="role" className="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">Role</label>
+                            <select id="role" name="role" value={formData.role} onChange={handleChange} required className="w-full px-4 py-3 bg-surface border border-border rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary transition-all">
+                                <option value="">Select your role...</option>
                                 <option value="1st Year">1st Year</option>
                                 <option value="2nd Year">2nd Year</option>
                                 <option value="3rd Year">3rd Year</option>
@@ -220,81 +164,35 @@ const SignIn = () => {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-semibold text-neutral-700 mb-2">Domains (Select multiple)</label>
-                            <div className="space-y-2">
-                                <p className="text-xs text-neutral-500">Select all domains you're interested in or have skills in:</p>
-                                <div className="grid grid-cols-1 gap-2">
-                                    {['Web Development', 'Video Editing', 'Graphic Designing', 'Content Writing'].map((domain) => (
-                                        <label key={domain} className="flex items-center space-x-3 p-3 border border-neutral-200 rounded-lg hover:bg-neutral-50 cursor-pointer transition-colors">
-                                            <input
-                                                type="checkbox"
-                                                checked={formData.domains.includes(domain)}
-                                                onChange={() => handleDomainToggle(domain)}
-                                                className="w-4 h-4 text-emerald-600 border-neutral-300 rounded focus:ring-emerald-600 focus:ring-2"
-                                            />
-                                            <span className="text-sm font-medium text-neutral-700">{domain}</span>
-                                        </label>
-                                    ))}
-                                </div>
-                                {formData.domains.length > 0 && (
-                                    <div className="mt-3 p-2 bg-emerald-50 border border-emerald-200 rounded-lg">
-                                        <p className="text-sm text-emerald-800">
-                                            <strong>Selected:</strong> {formData.domains.join(', ')}
-                                        </p>
-                                    </div>
-                                )}
+                            <label className="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">Domains</label>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {domainOptions.map((domain) => (
+                                    <label key={domain} className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-colors ${formData.domains.includes(domain) ? 'bg-primary/10 border-primary/20' : 'border-border hover:bg-surface'}`}>
+                                        <input type="checkbox" checked={formData.domains.includes(domain)} onChange={() => handleDomainToggle(domain)} className="w-4 h-4 text-primary bg-surface border-border rounded-sm focus:ring-primary focus:ring-offset-background" />
+                                        <span className={`text-sm font-medium ${formData.domains.includes(domain) ? 'text-primary' : 'text-text-primary'}`}>{domain}</span>
+                                    </label>
+                                ))}
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="flex flex-col">
-                                <label htmlFor="password" className="block text-sm font-semibold text-neutral-700 mb-1">Password</label>
-                                <input
-                                    type="password"
-                                    id="password"
-                                    name="password"
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-neutral-800 shadow-sm"
-                                />
+                            <div>
+                                <label htmlFor="password" className="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">Password</label>
+                                <input type="password" id="password" name="password" value={formData.password} onChange={handleChange} required className="w-full px-4 py-3 bg-surface border border-border rounded-lg text-text-primary placeholder:text-text-secondary/60 focus:outline-none focus:ring-2 focus:ring-primary transition-all" />
                             </div>
-
-                            <div className="flex flex-col">
-                                <label htmlFor="passwordConfirm" className="block text-sm font-semibold text-neutral-700 mb-1">Confirm Password</label>
-                                <input
-                                    type="password"
-                                    id="passwordConfirm"
-                                    name="passwordConfirm"
-                                    value={formData.passwordConfirm}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-neutral-800 shadow-sm"
-                                />
+                            <div>
+                                <label htmlFor="passwordConfirm" className="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">Confirm Password</label>
+                                <input type="password" id="passwordConfirm" name="passwordConfirm" value={formData.passwordConfirm} onChange={handleChange} required className="w-full px-4 py-3 bg-surface border border-border rounded-lg text-text-primary placeholder:text-text-secondary/60 focus:outline-none focus:ring-2 focus:ring-primary transition-all" />
                             </div>
                         </div>
 
-                        <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className="w-full py-4 bg-emerald-600 text-white font-semibold rounded-lg shadow-md hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-                        >
-                            {isSubmitting ? 'Creating Account...' : 'Sign Up'}
+                        <button type="submit" disabled={isSubmitting} className="w-full flex items-center justify-center bg-primary hover:bg-primary-hover text-white font-bold py-3 px-6 rounded-lg transition-colors duration-250 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-primary/50">
+                            {isSubmitting ? (<><div className="w-5 h-5 border-2 border-white/50 border-t-white rounded-full animate-spin mr-3"></div><span>Creating Account...</span></>) : (<><UserPlus className="w-5 h-5 mr-2" /><span>Sign Up</span></>)}
                         </button>
                     </form>
 
-                    <div className="mt-8 pt-6 border-t border-neutral-200 text-center">
-                        <div className="space-x-2">
-                            <p className="text-neutral-600 text-sm inline">
-                                Already have an account?
-                            </p>
-                            <Link
-                                to="/"
-                                className="text-emerald-600 hover:text-emerald-700 font-semibold text-sm transition-colors duration-250"
-                            >
-                                Sign In
-                            </Link>
-                        </div>
+                    <div className="mt-8 pt-6 border-t border-border text-center">
+                        <p className="text-text-secondary text-sm">Already have an account?{' '}<Link to="/" className="text-primary hover:text-primary-hover font-semibold transition-colors">Sign In</Link></p>
                     </div>
                 </div>
             </div>

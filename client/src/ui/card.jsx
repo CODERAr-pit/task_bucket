@@ -11,7 +11,7 @@ import {
     MoreHorizontal,
 } from "lucide-react";
 import EditTaskModal from "../components/EditTaskModal";
-import { fetchTaskPermissions, canUserEditTask } from "../utils/permissions";
+import { fetchTaskPermissions, canUserEditTask, canUserDeleteTask } from "../utils/permissions";
 
 const TaskCard = ({
                       task = {
@@ -33,12 +33,13 @@ const TaskCard = ({
     const [permissions, setPermissions] = useState(null);
 
     useEffect(() => {
-        if (task?._id) {
-            fetchTaskPermissions(task._id)
+        const taskId = task?._id || task?.id;
+        if (taskId) {
+            fetchTaskPermissions(taskId)
                 .then(setPermissions)
                 .catch(() => setPermissions({ canEdit: false, canUpdateStatus: true }));
         }
-    }, [task?._id]);
+    }, [task?._id, task?.id]);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -93,15 +94,17 @@ const TaskCard = ({
                                 <Eye className="w-4 h-4 text-text-secondary" /> View Details
                             </button>
                             {canUserEditTask(permissions) && (
-                                <>
-                                    <button onClick={(e) => { e.stopPropagation(); setShowEditModal(true); setShowActions(false); }} className="w-full px-4 py-2 text-left text-sm flex items-center gap-3 text-text-primary hover:bg-border">
-                                        <Edit3 className="w-4 h-4 text-text-secondary" /> Edit Task
-                                    </button>
-                                    <div className="my-1 border-t border-border"></div>
-                                    <button onClick={(e) => { e.stopPropagation(); if (confirm("Delete this task?")) onDelete?.(task._id); setShowActions(false); }} className="w-full px-4 py-2 text-left text-sm flex items-center gap-3 text-red-400 hover:bg-red-900/50">
-                                        <Trash2 className="w-4 h-4" /> Delete Task
-                                    </button>
-                                </>
+                                <button onClick={(e) => { e.stopPropagation(); setShowEditModal(true); setShowActions(false); }} className="w-full px-4 py-2 text-left text-sm flex items-center gap-3 text-text-primary hover:bg-border">
+                                    <Edit3 className="w-4 h-4 text-text-secondary" /> Edit Task
+                                </button>
+                            )}
+                            {(canUserEditTask(permissions) || canUserDeleteTask(permissions)) && (
+                                <div className="my-1 border-t border-border"></div>
+                            )}
+                            {canUserDeleteTask(permissions) && (
+                                <button onClick={(e) => { e.stopPropagation(); if (confirm("Delete this task?")) onDelete?.(task._id || task.id); setShowActions(false); }} className="w-full px-4 py-2 text-left text-sm flex items-center gap-3 text-red-400 hover:bg-red-900/50">
+                                    <Trash2 className="w-4 h-4" /> Delete Task
+                                </button>
                             )}
                         </div>
                     )}
@@ -179,7 +182,13 @@ const TaskCard = ({
                 </div>
             </div>
 
-            <EditTaskModal isOpen={showEditModal} onClose={() => setShowEditModal(false)} task={task} permissions={permissions} />
+            <EditTaskModal 
+                isOpen={showEditModal} 
+                onClose={() => setShowEditModal(false)} 
+                task={task} 
+                permissions={permissions} 
+                onUpdate={onUpdate}
+            />
         </div>
     );
 };

@@ -40,6 +40,7 @@ const getTaskPermissions = async (req, res) => {
             permissions: {
                 canEdit: permissions.canEdit,
                 canUpdateStatus: permissions.canUpdateStatus,
+                canDelete: permissions.canDelete,
                 userRole: req.user.role,
                 userRoleLevel: permissions.roleLevel
             }

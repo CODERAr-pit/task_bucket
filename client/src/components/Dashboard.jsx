@@ -27,24 +27,46 @@ const Dashboard = () => {
     const [showEditModal, setShowEditModal] = useState(false);
     const [editingTask, setEditingTask] = useState(null);
     const [taskPermissions, setTaskPermissions] = useState(null);
+    const [selectedTaskPermissions, setSelectedTaskPermissions] = useState(null);
 
     useEffect(() => {
         fetchTasks();
     }, []);
 
-    const handleViewDetails = (task) => {
-        setSelectedTask(task);
-        setShowTaskDetails(true);
+    const handleViewDetails = async (task) => {
+        try {
+            const taskId = task._id || task.id;
+            if (!taskId) {
+                alert('Task ID not found. Please refresh the page and try again.');
+                return;
+            }
+            const permissions = await fetchTaskPermissions(taskId);
+            setSelectedTask(task);
+            setSelectedTaskPermissions(permissions);
+            setShowTaskDetails(true);
+        } catch (err) {
+            console.error('Error fetching task permissions for details:', err);
+            // Still show the modal but with limited permissions
+            setSelectedTask(task);
+            setSelectedTaskPermissions({ canEdit: false, canUpdateStatus: true, canDelete: false });
+            setShowTaskDetails(true);
+        }
     };
 
     const handleEditTask = async (task) => {
         try {
-            const permissions = await fetchTaskPermissions(task._id);
+            const taskId = task._id || task.id;
+            if (!taskId) {
+                alert('Task ID not found. Please refresh the page and try again.');
+                return;
+            }
+            const permissions = await fetchTaskPermissions(taskId);
             setEditingTask(task);
             setTaskPermissions(permissions);
             setShowEditModal(true);
             setShowTaskDetails(false);
         } catch (err) {
+            console.error('Error fetching task permissions:', err);
             setEditingTask(task);
             setTaskPermissions({ canEdit: false, canUpdateStatus: true });
             setShowEditModal(true);
@@ -57,8 +79,10 @@ const Dashboard = () => {
             await updateTask(taskId, updateData);
             await fetchTasks();
             setShowEditModal(false);
+            setEditingTask(null);
         } catch (err) {
-            alert('Failed to update task');
+            console.error('Error updating task:', err);
+            alert('Failed to update task: ' + (err.message || 'Unknown error'));
         }
     };
 
@@ -165,8 +189,29 @@ const Dashboard = () => {
             <Footer />
 
             {/* Modals */}
-            <TaskDetailsModal isOpen={showTaskDetails} onClose={() => setSelectedTask(null)} currentUser={getCurrentUser()} task={selectedTask} onUpdate={handleEditTask} onDelete={handleDeleteTask} />
-            <EditTaskModal isOpen={showEditModal} onClose={() => setEditingTask(null)} task={editingTask} permissions={taskPermissions} />
+            <TaskDetailsModal 
+                isOpen={showTaskDetails} 
+                onClose={() => {
+                    setSelectedTask(null);
+                    setSelectedTaskPermissions(null);
+                    setShowTaskDetails(false);
+                }} 
+                currentUser={getCurrentUser()} 
+                task={selectedTask} 
+                permissions={selectedTaskPermissions}
+                onUpdate={handleEditTask} 
+                onDelete={handleDeleteTask} 
+            />
+            <EditTaskModal 
+                isOpen={showEditModal} 
+                onClose={() => {
+                    setEditingTask(null);
+                    setShowEditModal(false);
+                }} 
+                task={editingTask} 
+                permissions={taskPermissions} 
+                onUpdate={handleUpdateTask}
+            />
         </div>
     );
 };

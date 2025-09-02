@@ -1,6 +1,7 @@
 import { Task } from "../models/Task.js";
 import mongoose from "mongoose";
 import { addVisibilityFilter } from "../utils/visibility.js";
+import { canDeleteTask } from "../utils/permissions.js";
 
 // Batch create tasks
 const batchCreateTasks = async (req, res) => {
@@ -361,8 +362,8 @@ const batchDeleteTasks = async (req, res) => {
             });
         }
 
-        // Find all tasks with visibility filter
-        let query = Task.find({ _id: { $in: ids } });
+        // Find all tasks with visibility filter and populate taskMaker
+        let query = Task.find({ _id: { $in: ids } }).populate('taskMaker');
         query = addVisibilityFilter(query, req.user._id);
         const tasks = await query.session(session).exec();
         
@@ -372,26 +373,19 @@ const batchDeleteTasks = async (req, res) => {
             });
         }
 
-        const userDomain = req.user.domain;
-        const userId = req.user._id.toString();
-        const isSenior = req.user.role === 'senior';
-
-        // Check permissions for each task
+        // Check permissions using year-based system (removed domain restriction)
+        // Users can delete tasks created by their year or juniors across all domains
         const unauthorizedTasks = tasks.filter(task => {
-            if (task.domain !== userDomain) return true;
+            // Check year-based delete permission only
+            if (!canDeleteTask(req.user, task.taskMaker)) return true;
             
-            if (isSenior) return false;
-            
-            const isTaskCreator = task.taskMaker && task.taskMaker.toString() === userId;
-            const isAssignedUser = task.assignedTo && task.assignedTo.toString() === userId;
-            
-            return !isTaskCreator && !isAssignedUser;
+            return false;
         });
 
         if (unauthorizedTasks.length > 0) {
             await session.abortTransaction();
             return res.status(403).json({
-                error: 'You do not have permission to delete some tasks',
+                error: 'You do not have permission to delete some tasks. You can only delete tasks created by your year or juniors.',
                 unauthorizedTaskIds: unauthorizedTasks.map(task => task._id)
             });
         }

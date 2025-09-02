@@ -68,6 +68,27 @@ const canUpdateTaskStatus = (currentUser, assignedUsers = [], taskMaker = null) 
 };
 
 /**
+ * Check if user can delete a task
+ * Rule: Users can delete tasks created by their year or juniors, but not tasks created by seniors
+ * 
+ * @param {Object} currentUser - The user trying to delete
+ * @param {Object} taskMaker - User who created the task
+ * @returns {boolean} - True if user can delete the task
+ */
+const canDeleteTask = (currentUser, taskMaker) => {
+    if (!taskMaker) {
+        return false; // Cannot delete task without knowing who created it
+    }
+    
+    const currentUserLevel = getRoleLevel(currentUser.role);
+    const taskMakerLevel = getRoleLevel(taskMaker.role);
+    
+    // Users can delete tasks created by their year or juniors (same or lower level)
+    // but cannot delete tasks created by seniors (higher level)
+    return currentUserLevel >= taskMakerLevel;
+};
+
+/**
  * Get user permission level for a task
  * 
  * @param {Object} currentUser - The user
@@ -79,6 +100,7 @@ const getTaskPermissions = (currentUser, assignedUsers = [], taskMaker = null) =
     return {
         canEdit: canEditTask(currentUser, assignedUsers, taskMaker),
         canUpdateStatus: canUpdateTaskStatus(currentUser, assignedUsers, taskMaker),
+        canDelete: canDeleteTask(currentUser, taskMaker),
         roleLevel: getRoleLevel(currentUser.role)
     };
 };
@@ -87,5 +109,6 @@ export {
     getRoleLevel,
     canEditTask,
     canUpdateTaskStatus,
+    canDeleteTask,
     getTaskPermissions
 };

@@ -54,9 +54,26 @@ const taskSchema = new Schema({
         reminded: {
             type: Date,
             default: null
+        },
+        remindersSent: {
+            fiveDays: {
+                type: Boolean,
+                default: false
+            },
+            threeDays: {
+                type: Boolean,
+                default: false
+            },
+            oneDay: {
+                type: Boolean,
+                default: false
+            },
+            overdue: {
+                type: Boolean,
+                default: false
+            }
         }
-    }
-    ,
+    },
     reminderStart: {
         type: Date,
         default: null

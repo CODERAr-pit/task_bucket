@@ -3,10 +3,12 @@ import TaskCard from "../ui/card.jsx";
 import Navbar from "../ui/Navbar.jsx";
 import TaskDetailsModal from "./TaskDetailsModal.jsx";
 import EditTaskModal from "./EditTaskModal.jsx";
+import FilterAndSortBar from "./FilterAndSortBar.jsx";
 import { useTaskContext } from "../context/TaskContext";
 import { Plus, Inbox } from "lucide-react";
 import { Link } from "react-router-dom";
 import { fetchTaskPermissions } from '../utils/permissions';
+import { filterTasks, sortTasks, getTaskCounts } from '../utils/taskFilters';
 import Footer from "./Footer.jsx";
 
 const Dashboard = () => {
@@ -29,9 +31,39 @@ const Dashboard = () => {
     const [taskPermissions, setTaskPermissions] = useState(null);
     const [selectedTaskPermissions, setSelectedTaskPermissions] = useState(null);
 
+    // Filter and Sort State
+    const [filters, setFilters] = useState({
+        status: 'all',
+        priority: 'all',
+        overdue: 'all'
+    });
+    const [sortBy, setSortBy] = useState('dueDate');
+    const [sortOrder, setSortOrder] = useState('asc');
+
     useEffect(() => {
         fetchTasks();
     }, []);
+
+    // Filter and Sort Handlers
+    const handleFilterChange = (filterType, value) => {
+        setFilters(prev => ({
+            ...prev,
+            [filterType]: value
+        }));
+    };
+
+    const handleSortChange = (newSortBy, newSortOrder) => {
+        setSortBy(newSortBy);
+        setSortOrder(newSortOrder);
+    };
+
+    const handleClearFilters = () => {
+        setFilters({
+            status: 'all',
+            priority: 'all',
+            overdue: 'all'
+        });
+    };
 
     const handleViewDetails = async (task) => {
         try {
@@ -108,7 +140,11 @@ const Dashboard = () => {
         return selectedDomain === 'General' ? 'All Tasks' : `${selectedDomain} Tasks`;
     };
 
-    const filteredTasks = getFilteredTasks(tasks);
+    // Apply domain filtering first, then additional filters and sorting
+    const domainFilteredTasks = getFilteredTasks(tasks);
+    const additionalFilteredTasks = filterTasks(domainFilteredTasks, filters);
+    const finalTasks = sortTasks(additionalFilteredTasks, sortBy, sortOrder);
+    const taskCounts = getTaskCounts(domainFilteredTasks);
 
     return (
         <div className="min-h-screen bg-background text-text-primary font-sans flex flex-col">
@@ -140,7 +176,7 @@ const Dashboard = () => {
                                     {getDisplayTitle()}
                                 </h1>
                                 <p className="text-text-secondary text-sm mt-1">
-                                    Showing {filteredTasks.length} of {tasks.length} tasks.
+                                    Showing {finalTasks.length} of {domainFilteredTasks.length} tasks.
                                 </p>
                             </div>
                             <Link to="/tasks">
@@ -151,10 +187,21 @@ const Dashboard = () => {
                             </Link>
                         </header>
 
+                        {/* Filter and Sort Bar */}
+                        <FilterAndSortBar
+                            filters={filters}
+                            sortBy={sortBy}
+                            sortOrder={sortOrder}
+                            onFilterChange={handleFilterChange}
+                            onSortChange={handleSortChange}
+                            onClearFilters={handleClearFilters}
+                            taskCounts={taskCounts}
+                        />
+
                         {/* Tasks Grid */}
-                        {filteredTasks.length > 0 ? (
+                        {finalTasks.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                {filteredTasks.map(task => (
+                                {finalTasks.map(task => (
                                     <TaskCard
                                         key={task._id || task.id}
                                         task={task}
@@ -169,17 +216,29 @@ const Dashboard = () => {
                             <div className="text-center flex flex-col justify-center items-center py-20 border-2 border-dashed border-border rounded-2xl">
                                 <Inbox className="w-14 h-14 text-border mx-auto mb-5" />
                                 <h3 className="text-text-primary text-xl font-bold mb-2">
-                                    It's quiet in here
+                                    {domainFilteredTasks.length === 0 ? "It's quiet in here" : "No tasks match your filters"}
                                 </h3>
                                 <p className="text-text-secondary text-sm mb-6 max-w-md mx-auto">
-                                    There are no tasks to show for this view. Create a new one to get started.
+                                    {domainFilteredTasks.length === 0 
+                                        ? "There are no tasks to show for this view. Create a new one to get started."
+                                        : "Try adjusting your filters to see more tasks, or create a new task."
+                                    }
                                 </p>
-                                <Link to="/tasks">
-                                    <button className="flex items-center justify-center bg-primary hover:bg-primary-hover text-white font-bold py-2.5 px-5 rounded-full transition-transform duration-200 hover:-translate-y-0.5">
-                                        <Plus size={18} className="mr-2" />
-                                        Create First Task
+                                {domainFilteredTasks.length === 0 ? (
+                                    <Link to="/tasks">
+                                        <button className="flex items-center justify-center bg-primary hover:bg-primary-hover text-white font-bold py-2.5 px-5 rounded-full transition-transform duration-200 hover:-translate-y-0.5">
+                                            <Plus size={18} className="mr-2" />
+                                            Create First Task
+                                        </button>
+                                    </Link>
+                                ) : (
+                                    <button
+                                        onClick={handleClearFilters}
+                                        className="flex items-center justify-center bg-border hover:bg-text-secondary text-text-primary font-bold py-2.5 px-5 rounded-full transition-transform duration-200 hover:-translate-y-0.5"
+                                    >
+                                        Clear Filters
                                     </button>
-                                </Link>
+                                )}
                             </div>
                         )}
                     </>

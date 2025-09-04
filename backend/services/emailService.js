@@ -19,63 +19,51 @@ const createTransporter = () => {
 // Email templates
 const emailTemplates = {
     newUserRegistration: (userName, userEmail, userId, userRole, userDomains) => ({
-        subject: ' New User Registration - Action Required',
+        subject: 'New User Registration - Action Required',
         html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                <div style="text-align: center; border-bottom: 2px solid #007bff; padding-bottom: 20px; margin-bottom: 30px;">
-                    <h1 style="color: #007bff; margin: 0;">TaskBucket Admin</h1>
-                    <h2 style="color: #333; margin: 10px 0;">New User Registration</h2>
+            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
+                <div style="text-align: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 20px; margin-bottom: 30px;">
+                    <h1 style="color: #1f2937; margin: 0; font-size: 24px; font-weight: 600;">TaskBucket</h1>
+                    <h2 style="color: #374151; margin: 10px 0; font-size: 18px; font-weight: 500;">New User Registration</h2>
                 </div>
                 
-                <p style="font-size: 16px; color: #333;">A new user has registered and needs admin approval:</p>
+                <p style="font-size: 16px; color: #374151; line-height: 1.6;">A new user has registered and requires admin approval:</p>
                 
-                <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 25px; border-radius: 10px; margin: 25px 0; border-left: 4px solid #007bff;">
+                <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 24px; margin: 24px 0;">
                     <table style="width: 100%; border-collapse: collapse;">
-                        <tr><td style="padding: 8px 0; font-weight: bold; color: #495057;">Name:</td><td style="padding: 8px 0; color: #333;">${userName}</td></tr>
-                        <tr><td style="padding: 8px 0; font-weight: bold; color: #495057;">Email:</td><td style="padding: 8px 0; color: #333;">${userEmail}</td></tr>
-                        <tr><td style="padding: 8px 0; font-weight: bold; color: #495057;">Role:</td><td style="padding: 8px 0; color: #333;">${userRole}</td></tr>
-                        <tr><td style="padding: 8px 0; font-weight: bold; color: #495057;">Domains:</td><td style="padding: 8px 0; color: #333;"><strong>${userDomains && userDomains.length > 0 ? userDomains.join(', ') : 'Not specified'}</strong></td></tr>
-                        <tr><td style="padding: 8px 0; font-weight: bold; color: #495057;">User ID:</td><td style="padding: 8px 0; color: #6c757d; font-family: monospace; font-size: 12px;">${userId}</td></tr>
-                        <tr><td style="padding: 8px 0; font-weight: bold; color: #495057;">Registration Date:</td><td style="padding: 8px 0; color: #333;">${new Date().toLocaleDateString()}</td></tr>
-                        <tr><td style="padding: 8px 0; font-weight: bold; color: #495057;">Status:</td><td style="padding: 8px 0; color: #ffc107; font-weight: bold;">⏳ Pending Approval</td></tr>
+                        <tr><td style="padding: 8px 0; font-weight: 600; color: #4b5563;">Name:</td><td style="padding: 8px 0; color: #1f2937;">${userName}</td></tr>
+                        <tr><td style="padding: 8px 0; font-weight: 600; color: #4b5563;">Email:</td><td style="padding: 8px 0; color: #1f2937;">${userEmail}</td></tr>
+                        <tr><td style="padding: 8px 0; font-weight: 600; color: #4b5563;">Role:</td><td style="padding: 8px 0; color: #1f2937;">${userRole}</td></tr>
+                        <tr><td style="padding: 8px 0; font-weight: 600; color: #4b5563;">Domains:</td><td style="padding: 8px 0; color: #1f2937;">${userDomains && userDomains.length > 0 ? userDomains.join(', ') : 'Not specified'}</td></tr>
+                        <tr><td style="padding: 8px 0; font-weight: 600; color: #4b5563;">User ID:</td><td style="padding: 8px 0; color: #6b7280; font-family: monospace; font-size: 12px;">${userId}</td></tr>
+                        <tr><td style="padding: 8px 0; font-weight: 600; color: #4b5563;">Registration Date:</td><td style="padding: 8px 0; color: #1f2937;">${new Date().toLocaleDateString()}</td></tr>
+                        <tr><td style="padding: 8px 0; font-weight: 600; color: #4b5563;">Status:</td><td style="padding: 8px 0; color: #d97706; font-weight: 600;">Pending Approval</td></tr>
                     </table>
                 </div>
                 
-                <div style="text-align: center; margin: 30px 0;">
-                    <p style="margin-bottom: 20px; font-size: 16px; color: #333; font-weight: bold;">Click below to review and approve this user:</p>
-                    
-                    <div style="margin-top: 25px;">
-                        <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/${userId}" 
-                           style="background: linear-gradient(135deg, #007bff 0%, #0056b3 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; display: inline-block; font-weight: bold; font-size: 16px; box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3); transition: all 0.3s ease;">
-                            Review This User
-                        </a>
-                    </div>
-                    
-                    <p style="color: #6c757d; font-size: 14px; margin-top: 15px;">
+                <div style="text-align: center; margin: 32px 0;">
+                    <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/${userId}" 
+                       style="display: inline-block; background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500; font-size: 16px;">
+                        Review User
+                    </a>
+                    <p style="color: #6b7280; font-size: 14px; margin-top: 16px;">
                         Login with your admin credentials to approve or reject this user
                     </p>
                 </div>
                 
-                <div style="background: #e7f3ff; padding: 20px; border-radius: 8px; margin-top: 30px; border: 1px solid #b3d9ff;">
-                    <h3 style="color: #0066cc; margin-top: 0; font-size: 16px;"> Admin Actions Available:</h3>
-                    <ul style="color: #333; font-size: 14px; padding-left: 20px; margin-bottom: 0;">
-                        <li> <strong>Approve User</strong> - Grant access to TaskBucket</li>
-                        <li> <strong>Reject User</strong> - Deny access with optional reason</li>
-                        <li> <strong>Send Notifications</strong> - Automatic email updates to users</li>
-                        <li> <strong>View Statistics</strong> - Monitor user registration trends</li>
+                <div style="background-color: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; padding: 20px; margin-top: 24px;">
+                    <h3 style="color: #475569; margin-top: 0; font-size: 16px; font-weight: 600;">Admin Actions Available:</h3>
+                    <ul style="color: #475569; font-size: 14px; line-height: 1.6; margin-bottom: 0;">
+                        <li><strong>Approve User</strong> - Grant access to TaskBucket</li>
+                        <li><strong>Reject User</strong> - Deny access with optional reason</li>
+                        <li><strong>View Dashboard</strong> - Monitor pending registrations</li>
                     </ul>
                 </div>
                 
-                <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-top: 20px; border: 1px solid #ffeaa7;">
-                    <p style="color: #856404; font-size: 14px; margin: 0;">
-                         <strong>Quick Tip:</strong> You can find this user in the "Pending Users" section of your admin dashboard. Use the User ID above for quick reference.
-                    </p>
-                </div>
-                
-                <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6;">
-                    <p style="color: #6c757d; font-size: 12px; margin: 0;">
-                        This email was sent by TaskBucket Admin System<br>
-                        ${new Date().toLocaleString()} | Admin Panel: <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin" style="color: #007bff;">Click Here</a>
+                <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center;">
+                    <p style="color: #6b7280; font-size: 12px; margin: 0; line-height: 1.5;">
+                        This is an automated notification from TaskBucket<br>
+                        ${new Date().toLocaleString()}
                     </p>
                 </div>
             </div>
@@ -83,59 +71,110 @@ const emailTemplates = {
     }),
     
     userApproved: (userName) => ({
-        subject: ' Account Approved - Welcome to TaskBucket!',
+        subject: 'Account Approved - Welcome to TaskBucket',
         html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: #28a745;">Welcome to TaskBucket!</h2>
-                <p>Hi <strong>${userName}</strong>,</p>
-                <p>Great news! Your account has been approved by an administrator. You can now log in and start using TaskBucket to manage your tasks and collaborate with your team.</p>
-                <p>
+            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
+                <div style="text-align: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 20px; margin-bottom: 30px;">
+                    <h1 style="color: #1f2937; margin: 0; font-size: 24px; font-weight: 600;">TaskBucket</h1>
+                    <h2 style="color: #059669; margin: 10px 0; font-size: 18px; font-weight: 500;">Account Approved</h2>
+                </div>
+                
+                <p style="font-size: 16px; color: #374151; line-height: 1.6;">Dear ${userName},</p>
+                <p style="font-size: 16px; color: #374151; line-height: 1.6;">Your account has been approved by an administrator. You can now access TaskBucket to manage tasks and collaborate with your team.</p>
+                
+                <div style="text-align: center; margin: 32px 0;">
                     <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/" 
-                       style="background: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
-                       Login Now
+                       style="display: inline-block; background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500; font-size: 16px;">
+                       Access Dashboard
                     </a>
-                </p>
-                <p style="color: #666; font-size: 14px;">If you have any questions, please don't hesitate to contact our support team.</p>
+                </div>
+                
+                <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 20px; margin-top: 24px;">
+                    <h3 style="color: #15803d; margin-top: 0; font-size: 16px; font-weight: 600;">Getting Started:</h3>
+                    <ul style="color: #15803d; font-size: 14px; line-height: 1.6; margin-bottom: 0;">
+                        <li>Log in with your registered credentials</li>
+                        <li>Complete your profile setup</li>
+                        <li>Explore the task management features</li>
+                    </ul>
+                </div>
+                
+                <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center;">
+                    <p style="color: #6b7280; font-size: 12px; margin: 0; line-height: 1.5;">
+                        This is an automated notification from TaskBucket<br>
+                        ${new Date().toLocaleString()}
+                    </p>
+                </div>
             </div>
         `
     }),
     
     userRejected: (userName, reason = '') => ({
-        subject: ' Account Registration Declined',
+        subject: 'Account Registration Declined',
         html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: #dc3545;">Registration Update</h2>
-                <p>Hi <strong>${userName}</strong>,</p>
-                <p>Unfortunately, your account registration for TaskBucket has been declined by an administrator.</p>
-                ${reason ? `<div style="background: #f8f9fa; padding: 15px; border-left: 4px solid #dc3545; margin: 20px 0;">
-                    <strong>Reason:</strong> ${reason}
+            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
+                <div style="text-align: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 20px; margin-bottom: 30px;">
+                    <h1 style="color: #1f2937; margin: 0; font-size: 24px; font-weight: 600;">TaskBucket</h1>
+                    <h2 style="color: #dc2626; margin: 10px 0; font-size: 18px; font-weight: 500;">Registration Update</h2>
+                </div>
+                
+                <p style="font-size: 16px; color: #374151; line-height: 1.6;">Dear ${userName},</p>
+                <p style="font-size: 16px; color: #374151; line-height: 1.6;">Your account registration for TaskBucket has been declined by an administrator.</p>
+                
+                ${reason ? `<div style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 20px; margin: 24px 0;">
+                    <h3 style="color: #dc2626; margin-top: 0; font-size: 16px; font-weight: 600;">Reason:</h3>
+                    <p style="color: #374151; margin: 0; font-size: 14px; line-height: 1.6;">${reason}</p>
                 </div>` : ''}
-                <p>If you believe this is an error or have questions about this decision, please contact our support team.</p>
-                <p style="color: #666; font-size: 14px;">Thank you for your interest in TaskBucket.</p>
+                
+                <p style="font-size: 16px; color: #374151; line-height: 1.6;">If you believe this is an error or have questions about this decision, please contact our support team.</p>
+                
+                <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center;">
+                    <p style="color: #6b7280; font-size: 12px; margin: 0; line-height: 1.5;">
+                        This is an automated notification from TaskBucket<br>
+                        ${new Date().toLocaleString()}
+                    </p>
+                </div>
             </div>
         `
     }),
     
     taskAssigned: (userName, taskTitle, taskDescription, dueDate, assignedBy) => ({
-        subject: ` New Task Assigned: ${taskTitle}`,
+        subject: `New Task Assigned: ${taskTitle}`,
         html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: #007bff;">New Task Assigned</h2>
-                <p>Hi <strong>${userName}</strong>,</p>
-                <p>You have been assigned a new task in TaskBucket:</p>
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                    <h3 style="margin-top: 0; color: #333;">${taskTitle}</h3>
-                    <p><strong>Description:</strong> ${taskDescription}</p>
-                    <p><strong>Due Date:</strong> ${new Date(dueDate).toLocaleDateString()}</p>
-                    <p><strong>Assigned By:</strong> ${assignedBy}</p>
+            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
+                <div style="text-align: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 20px; margin-bottom: 30px;">
+                    <h1 style="color: #1f2937; margin: 0; font-size: 24px; font-weight: 600;">TaskBucket</h1>
+                    <h2 style="color: #2563eb; margin: 10px 0; font-size: 18px; font-weight: 500;">New Task Assignment</h2>
                 </div>
-                <p>
+                
+                <p style="font-size: 16px; color: #374151; line-height: 1.6;">Dear ${userName},</p>
+                <p style="font-size: 16px; color: #374151; line-height: 1.6;">You have been assigned a new task in TaskBucket:</p>
+                
+                <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 24px; margin: 24px 0;">
+                    <h3 style="margin-top: 0; color: #1f2937; font-size: 18px; font-weight: 600;">${taskTitle}</h3>
+                    <div style="margin: 16px 0;">
+                        <p style="margin: 8px 0; color: #4b5563; font-size: 14px;"><strong>Description:</strong> ${taskDescription}</p>
+                        <p style="margin: 8px 0; color: #4b5563; font-size: 14px;"><strong>Due Date:</strong> ${new Date(dueDate).toLocaleDateString()}</p>
+                        <p style="margin: 8px 0; color: #4b5563; font-size: 14px;"><strong>Assigned By:</strong> ${assignedBy}</p>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin: 32px 0;">
                     <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/dashboard" 
-                       style="background: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
-                       View Task
+                       style="display: inline-block; background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500; font-size: 16px;">
+                       View Task Details
                     </a>
-                </p>
-                <p style="color: #666; font-size: 14px;">Please log in to TaskBucket to view full task details and update your progress.</p>
+                </div>
+                
+                <div style="background-color: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; padding: 20px; margin-top: 24px;">
+                    <p style="color: #475569; font-size: 14px; margin: 0; line-height: 1.6;">Please log in to TaskBucket to view full task details, update progress, and collaborate with your team.</p>
+                </div>
+                
+                <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center;">
+                    <p style="color: #6b7280; font-size: 12px; margin: 0; line-height: 1.5;">
+                        This is an automated notification from TaskBucket<br />
+                        ${new Date().toLocaleString()}
+                    </p>
+                </div>
             </div>
         `
     }),
@@ -143,26 +182,218 @@ const emailTemplates = {
     taskReminder: (userName, tasks) => ({
         subject: 'Task Reminder - Tasks Due Soon',
         html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: #ffc107;">Task Reminder</h2>
-                <p>Hi <strong>${userName}</strong>,</p>
-                <p>This is a friendly reminder that you have <strong>${tasks.length}</strong> task(s) due soon:</p>
-                <div style="background: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
+                <div style="text-align: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 20px; margin-bottom: 30px;">
+                    <h1 style="color: #1f2937; margin: 0; font-size: 24px; font-weight: 600;">TaskBucket</h1>
+                    <h2 style="color: #d97706; margin: 10px 0; font-size: 18px; font-weight: 500;">Task Reminder</h2>
+                </div>
+                
+                <p style="font-size: 16px; color: #374151; line-height: 1.6;">Dear ${userName},</p>
+                <p style="font-size: 16px; color: #374151; line-height: 1.6;">This is a friendly reminder that you have ${tasks.length} task${tasks.length > 1 ? 's' : ''} due soon:</p>
+                
+                <div style="background-color: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 24px; margin: 24px 0;">
                     ${tasks.map(task => `
-                        <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #ffeaa7;">
-                            <h4 style="margin: 0 0 5px 0; color: #333;">${task.title}</h4>
-                            <p style="margin: 0; color: #856404;">Due: ${new Date(task.dueDate).toLocaleDateString()}</p>
-                            <p style="margin: 5px 0 0 0; font-size: 14px; color: #666;">Status: ${task.status.replace('-', ' ')}</p>
+                        <div style="margin-bottom: 16px; padding: 16px; background-color: #ffffff; border-radius: 6px; border: 1px solid #e5e7eb;">
+                            <h4 style="margin: 0 0 8px 0; color: #1f2937; font-size: 16px; font-weight: 600;">${task.title}</h4>
+                            <p style="margin: 4px 0; color: #4b5563; font-size: 14px;"><strong>Due:</strong> ${new Date(task.dueDate).toLocaleDateString()}</p>
+                            <p style="margin: 4px 0; color: #6b7280; font-size: 14px;"><strong>Status:</strong> ${task.status.replace('-', ' ')}</p>
                         </div>
                     `).join('')}
                 </div>
-                <p>
+                
+                <div style="text-align: center; margin: 32px 0;">
                     <a href="${process.env.CLIENT_URL}/dashboard" 
-                       style="background: #dc3545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
-                       View All Tasks
+                       style="display: inline-block; background-color: #d97706; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500; font-size: 16px;">
+                        View All Tasks
                     </a>
-                </p>
-                <p style="color: #666; font-size: 14px;">Don't let these tasks become overdue! Log in now to update your progress.</p>
+                </div>
+                
+                <div style="background-color: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 20px; margin-top: 24px;">
+                    <p style="color: #92400e; font-size: 14px; margin: 0; line-height: 1.6;">Please review and update your task progress to stay on track with your deadlines.</p>
+                </div>
+                
+                <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center;">
+                    <p style="color: #6b7280; font-size: 12px; margin: 0; line-height: 1.5;">
+                        This is an automated notification from TaskBucket<br />
+                        ${new Date().toLocaleString()}
+                    </p>
+                </div>
+            </div>
+        `
+    }),
+
+    deadlineReminder5Days: (userName, tasks) => ({
+        subject: 'Task Deadline Reminder - 5 Days Remaining',
+        html: `
+            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
+                <div style="text-align: center; border-bottom: 2px solid #2563eb; padding-bottom: 20px; margin-bottom: 30px;">
+                    <h1 style="color: #1f2937; margin: 0; font-size: 24px; font-weight: 600;">TaskBucket</h1>
+                    <h2 style="color: #374151; margin: 10px 0; font-size: 18px; font-weight: 500;">Task Deadline Notification</h2>
+                </div>
+                
+                <p style="font-size: 16px; color: #374151; line-height: 1.6;">Dear ${userName},</p>
+                <p style="font-size: 16px; color: #374151; line-height: 1.6;">You have ${tasks.length} task${tasks.length > 1 ? 's' : ''} with upcoming deadlines in 5 days. Please review your schedule and plan accordingly.</p>
+                
+                <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 24px; margin: 24px 0;">
+                    ${tasks.map(task => `
+                        <div style="margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0;">
+                            <h3 style="margin: 0 0 12px 0; color: #1f2937; font-size: 18px; font-weight: 600;">${task.title}</h3>
+                            <div style="margin-bottom: 8px;">
+                                <span style="display: inline-block; margin-right: 16px; color: #6b7280; font-size: 14px; font-weight: 500;">Due Date:</span>
+                                <span style="color: #374151; font-size: 14px; font-weight: 600;">${new Date(task.dueDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                            </div>
+                            <div style="margin-bottom: 8px;">
+                                <span style="display: inline-block; margin-right: 16px; color: #6b7280; font-size: 14px; font-weight: 500;">Status:</span>
+                                <span style="color: #374151; font-size: 14px; text-transform: capitalize;">${task.status.replace('-', ' ')}</span>
+                            </div>
+                            <div style="margin-bottom: 8px;">
+                                <span style="display: inline-block; margin-right: 16px; color: #6b7280; font-size: 14px; font-weight: 500;">Priority:</span>
+                                <span style="color: ${task.priority === 'high' ? '#dc2626' : task.priority === 'medium' ? '#d97706' : '#059669'}; font-size: 14px; font-weight: 600; text-transform: capitalize;">${task.priority}</span>
+                            </div>
+                            ${task.description ? `<div style="margin-top: 12px; padding: 12px; background-color: #ffffff; border-radius: 4px; border: 1px solid #e5e7eb;"><p style="margin: 0; color: #6b7280; font-size: 14px; line-height: 1.5;">${task.description.length > 150 ? task.description.substring(0, 150) + '...' : task.description}</p></div>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div style="text-align: center; margin: 32px 0;">
+                    <a href="${process.env.FRONTEND_URL || process.env.CLIENT_URL}/dashboard" 
+                       style="display: inline-block; background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500; font-size: 16px;">
+                        View Tasks
+                    </a>
+                </div>
+                
+                <div style="background-color: #f1f5f9; border-left: 4px solid #2563eb; padding: 16px; margin-top: 24px;">
+                    <h4 style="margin: 0 0 12px 0; color: #1e293b; font-size: 16px; font-weight: 600;">Recommended Actions:</h4>
+                    <ul style="color: #475569; font-size: 14px; line-height: 1.6; margin: 0; padding-left: 16px;">
+                        <li style="margin-bottom: 6px;">Review task requirements and deliverables</li>
+                        <li style="margin-bottom: 6px;">Assess current progress and identify any blockers</li>
+                        <li style="margin-bottom: 6px;">Update task status to reflect current progress</li>
+                        <li>Communicate with team members if assistance is needed</li>
+                    </ul>
+                </div>
+                
+                <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center;">
+                    <p style="color: #6b7280; font-size: 12px; margin: 0; line-height: 1.5;">
+                        This is an automated notification from TaskBucket<br>
+                        ${new Date().toLocaleString()}
+                    </p>
+                </div>
+            </div>
+        `
+    }),
+
+    deadlineReminder3Days: (userName, tasks) => ({
+        subject: 'Important: Task Deadline Alert - 3 Days Remaining',
+        html: `
+            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
+                <div style="text-align: center; border-bottom: 2px solid #d97706; padding-bottom: 20px; margin-bottom: 30px;">
+                    <h1 style="color: #1f2937; margin: 0; font-size: 24px; font-weight: 600;">TaskBucket</h1>
+                    <h2 style="color: #b45309; margin: 10px 0; font-size: 18px; font-weight: 600;">Task Deadline Alert</h2>
+                </div>
+                
+                <p style="font-size: 16px; color: #374151; line-height: 1.6;">Dear ${userName},</p>
+                <p style="font-size: 16px; color: #374151; line-height: 1.6;"><strong>Important Notice:</strong> You have ${tasks.length} task${tasks.length > 1 ? 's' : ''} due in 3 days. Immediate attention and prioritization are recommended.</p>
+                
+                <div style="background-color: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px; padding: 24px; margin: 24px 0;">
+                    ${tasks.map(task => `
+                        <div style="margin-bottom: 20px; padding: 16px; background-color: #ffffff; border-radius: 6px; border: 1px solid #f59e0b;">
+                            <h3 style="margin: 0 0 12px 0; color: #92400e; font-size: 18px; font-weight: 700;">${task.title}</h3>
+                            <div style="background-color: #fef3c7; padding: 12px; border-radius: 4px; margin-bottom: 12px;">
+                                <div style="margin-bottom: 8px;">
+                                    <span style="display: inline-block; margin-right: 16px; color: #92400e; font-size: 14px; font-weight: 600;">Due Date:</span>
+                                    <span style="color: #92400e; font-size: 14px; font-weight: 700;">${new Date(task.dueDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                                </div>
+                                <div style="margin-bottom: 8px;">
+                                    <span style="display: inline-block; margin-right: 16px; color: #92400e; font-size: 14px; font-weight: 600;">Time Remaining:</span>
+                                    <span style="color: #dc2626; font-size: 14px; font-weight: 700;">3 Days</span>
+                                </div>
+                                <div style="margin-bottom: 8px;">
+                                    <span style="display: inline-block; margin-right: 16px; color: #6b7280; font-size: 14px; font-weight: 500;">Status:</span>
+                                    <span style="color: #374151; font-size: 14px; text-transform: capitalize; font-weight: 600;">${task.status.replace('-', ' ')}</span>
+                                </div>
+                                <div style="margin-bottom: 8px;">
+                                    <span style="display: inline-block; margin-right: 16px; color: #6b7280; font-size: 14px; font-weight: 500;">Priority:</span>
+                                    <span style="color: ${task.priority === 'high' ? '#dc2626' : task.priority === 'medium' ? '#d97706' : '#059669'}; font-size: 14px; font-weight: 700; text-transform: capitalize;">${task.priority}</span>
+                                </div>
+                            </div>
+                            ${task.description ? `<div style="padding: 12px; background-color: #f9fafb; border-radius: 4px; border: 1px solid #e5e7eb;"><p style="margin: 0; color: #6b7280; font-size: 14px; line-height: 1.5;">${task.description.length > 120 ? task.description.substring(0, 120) + '...' : task.description}</p></div>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div style="text-align: center; margin: 32px 0;">
+                    <a href="${process.env.FRONTEND_URL || process.env.CLIENT_URL}/dashboard" 
+                       style="display: inline-block; background-color: #d97706; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px;">
+                        Review Tasks Now
+                    </a>
+                </div>
+                
+              
+                
+                <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center;">
+                    <p style="color: #6b7280; font-size: 12px; margin: 0; line-height: 1.5;">
+                        This is an automated notification from TaskBucket<br>
+                        ${new Date().toLocaleString()}
+                    </p>
+                </div>
+            </div>
+        `
+    }),
+
+    deadlineReminder1Day: (userName, tasks) => ({
+        subject: 'Urgent: Task Due Tomorrow - Action Required',
+        html: `
+            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
+                <div style="text-align: center; border-bottom: 1px solid #e5e7eb; padding-bottom: 20px; margin-bottom: 30px;">
+                    <h1 style="color: #1f2937; margin: 0; font-size: 24px; font-weight: 600;">TaskBucket</h1>
+                    <h2 style="color: #dc2626; margin: 10px 0; font-size: 18px; font-weight: 600;">Urgent Task Deadline Alert</h2>
+                </div>
+                
+                <p style="font-size: 16px; color: #374151; line-height: 1.6;">Dear ${userName},</p>
+                <p style="font-size: 16px; color: #dc2626; line-height: 1.6; font-weight: 600;">Important: You have ${tasks.length} task${tasks.length > 1 ? 's' : ''} due tomorrow. Immediate attention is required.</p>
+                
+                <div style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 24px; margin: 24px 0;">
+                    ${tasks.map(task => `
+                        <div style="margin-bottom: 20px; padding: 20px; background-color: #ffffff; border-radius: 6px; border: 1px solid #dc2626;">
+                            <h3 style="margin: 0 0 16px 0; color: #dc2626; font-size: 18px; font-weight: 700;">${task.title}</h3>
+                            <div style="background-color: #fef2f2; padding: 16px; border-radius: 6px; margin-bottom: 16px; border: 1px solid #fecaca;">
+                                <div style="margin-bottom: 8px;">
+                                    <span style="display: inline-block; margin-right: 16px; color: #dc2626; font-size: 14px; font-weight: 600;">Due Date:</span>
+                                    <span style="color: #dc2626; font-size: 16px; font-weight: 700;">${new Date(task.dueDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                                </div>
+                                <div style="margin-bottom: 8px;">
+                                    <span style="display: inline-block; margin-right: 16px; color: #dc2626; font-size: 14px; font-weight: 600;">Time Remaining:</span>
+                                    <span style=" color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">Less than 24 hours</span>
+                                </div>
+                                <div style="margin-bottom: 8px;">
+                                    <span style="display: inline-block; margin-right: 16px; color: #6b7280; font-size: 14px; font-weight: 500;">Status:</span>
+                                    <span style="color: ${task.status === 'completed' ? '#059669' : '#dc2626'}; font-size: 14px; text-transform: capitalize; font-weight: 600;">${task.status.replace('-', ' ')}</span>
+                                </div>
+                                <div style="margin-bottom: 8px;">
+                                    <span style="display: inline-block; margin-right: 16px; color: #6b7280; font-size: 14px; font-weight: 500;">Priority:</span>
+                                    <span style="color: ${task.priority === 'high' ? '#dc2626' : task.priority === 'medium' ? '#d97706' : '#059669'}; font-size: 14px; font-weight: 600; text-transform: capitalize;">${task.priority}</span>
+                                </div>
+                            </div>
+                            ${task.description ? `<div style="padding: 12px; background-color: #f8fafc; border-radius: 4px; border: 1px solid #e2e8f0;"><p style="margin: 0; color: #475569; font-size: 14px; line-height: 1.5;">${task.description.length > 100 ? task.description.substring(0, 100) + '...' : task.description}</p></div>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div style="text-align: center; margin: 32px 0;">
+                    <a href="${process.env.FRONTEND_URL || process.env.CLIENT_URL}/dashboard" 
+                       style="display: inline-block; background-color: #dc2626; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px;">
+                        Complete Tasks Now
+                    </a>
+                </div>
+                
+             
+                
+                <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center;">
+                    <p style="color: #6b7280; font-size: 12px; margin: 0; line-height: 1.5;">
+                        This is an automated notification from TaskBucket<br />
+                        ${new Date().toLocaleString()}
+                    </p>
+                </div>
             </div>
         `
     })
@@ -268,6 +499,66 @@ export const sendTaskReminderEmail = async (userEmail, userName, tasks) => {
         return { success: true, message: 'Task reminder email sent successfully' };
     } catch (error) {
         console.error('Error sending task reminder email:', error);
+        throw error;
+    }
+};
+
+export const sendDeadlineReminder5Days = async (userEmail, userName, tasks) => {
+    try {
+        const transporter = createTransporter();
+        const template = emailTemplates.deadlineReminder5Days(userName, tasks);
+        
+        await transporter.sendMail({
+            from: process.env.GMAIL_USER,
+            to: userEmail,
+            subject: template.subject,
+            html: template.html
+        });
+        
+        console.log(`5-day deadline reminder sent to: ${userEmail}`);
+        return { success: true, message: '5-day deadline reminder sent successfully' };
+    } catch (error) {
+        console.error('Error sending 5-day deadline reminder:', error);
+        throw error;
+    }
+};
+
+export const sendDeadlineReminder3Days = async (userEmail, userName, tasks) => {
+    try {
+        const transporter = createTransporter();
+        const template = emailTemplates.deadlineReminder3Days(userName, tasks);
+        
+        await transporter.sendMail({
+            from: process.env.GMAIL_USER,
+            to: userEmail,
+            subject: template.subject,
+            html: template.html
+        });
+        
+        console.log(`3-day deadline reminder sent to: ${userEmail}`);
+        return { success: true, message: '3-day deadline reminder sent successfully' };
+    } catch (error) {
+        console.error('Error sending 3-day deadline reminder:', error);
+        throw error;
+    }
+};
+
+export const sendDeadlineReminder1Day = async (userEmail, userName, tasks) => {
+    try {
+        const transporter = createTransporter();
+        const template = emailTemplates.deadlineReminder1Day(userName, tasks);
+        
+        await transporter.sendMail({
+            from: process.env.GMAIL_USER,
+            to: userEmail,
+            subject: template.subject,
+            html: template.html
+        });
+        
+        console.log(`1-day deadline reminder sent to: ${userEmail}`);
+        return { success: true, message: '1-day deadline reminder sent successfully' };
+    } catch (error) {
+        console.error('Error sending 1-day deadline reminder:', error);
         throw error;
     }
 };

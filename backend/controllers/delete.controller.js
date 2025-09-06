@@ -22,16 +22,13 @@ const deleteTask = async (req, res) => {
             });
         }
 
-        // Check if user can view this task based on visibility
         if (!canViewTask(existingTask, req.user._id)) {
             return res.status(404).json({
                 error: 'Task not found or you do not have permission to delete it'
             });
         }
 
-        // Year-based permission check (removed domain restriction)
-        // Users can delete tasks created by their year or juniors, but not seniors
-        // This applies across all domains
+      
         if (!canDeleteTask(req.user, existingTask.taskMaker)) {
             return res.status(403).json({
                 error: 'You can only delete tasks created by your year or juniors. Cannot delete tasks created by seniors.'

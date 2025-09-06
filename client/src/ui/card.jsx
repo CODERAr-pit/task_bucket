@@ -9,6 +9,9 @@ import {
     Trash2,
     Eye,
     MoreHorizontal,
+    AlertTriangle,
+    Minus,
+    ChevronDown,
 } from "lucide-react";
 import EditTaskModal from "../components/EditTaskModal";
 import { fetchTaskPermissions, canUserEditTask, canUserDeleteTask } from "../utils/permissions";
@@ -22,6 +25,7 @@ const TaskCard = ({
                           assignedToName: ["Liam Assignee", "Noah", "Olivia"],
                           dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
                           status: "in-progress",
+                          priority: "high",
                           domain: "Web Development",
                       },
                       onUpdate,
@@ -69,12 +73,45 @@ const TaskCard = ({
         return { bg: "bg-zinc-800", text: "text-zinc-400", dot: "bg-zinc-600", border: "border-zinc-700" };
     };
 
+    const getPriorityConfig = (priority) => {
+        const p = priority?.toLowerCase();
+        if (p === "high") return { 
+            bg: "bg-red-900/50", 
+            text: "text-red-300", 
+            border: "border-red-800/50",
+            icon: <AlertTriangle className="w-3 h-3" />,
+            label: "High"
+        };
+        if (p === "medium") return { 
+            bg: "bg-amber-900/50", 
+            text: "text-amber-300", 
+            border: "border-amber-800/50",
+            icon: <Minus className="w-3 h-3" />,
+            label: "Medium"
+        };
+        if (p === "low") return { 
+            bg: "bg-green-900/50", 
+            text: "text-green-300", 
+            border: "border-green-800/50",
+            icon: <ChevronDown className="w-3 h-3" />,
+            label: "Low"
+        };
+        return { 
+            bg: "bg-zinc-800", 
+            text: "text-zinc-400", 
+            border: "border-zinc-700",
+            icon: <Minus className="w-3 h-3" />,
+            label: "Medium"
+        };
+    };
+
     const getInitials = (name) => name ? name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : "?";
     const formatDate = (dateString) => dateString ? new Date(dateString).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "No date set";
     const isOverdue = (dueDate) => dueDate && new Date(dueDate) < new Date() && task.status !== 'completed';
 
     const domainConfig = getDomainConfig(task.domain);
     const statusConfig = getStatusConfig(task.status);
+    const priorityConfig = getPriorityConfig(task.priority);
     const allAssignees = Array.isArray(task.assignedToName) ? task.assignedToName : [];
 
     return (
@@ -176,6 +213,14 @@ const TaskCard = ({
                         <p className={`text-sm font-bold ${isOverdue(task.dueDate) ? "text-red-400" : "text-text-primary"}`}>{formatDate(task.dueDate)}</p>
                     </div>
                 </div>
+                
+                {/* Priority Display */}
+                <div className={`flex items-center gap-2 px-2.5 py-1 rounded-lg text-xs font-semibold border ${priorityConfig.bg} ${priorityConfig.text} ${priorityConfig.border}`}>
+                    {priorityConfig.icon}
+                    <span className="capitalize whitespace-nowrap">{priorityConfig.label}</span>
+                </div>
+
+                {/* Status Display */}
                 <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold border ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border}`}>
                     <div className={`w-2 h-2 rounded-full ${statusConfig.dot}`}></div>
                     <span className="capitalize whitespace-nowrap">{task.status}</span>

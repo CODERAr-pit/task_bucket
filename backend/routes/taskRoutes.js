@@ -1,73 +1,136 @@
-import express from 'express';
-import { Task } from '../models/Task.js';
-import { User } from '../models/User.js';
-import { authenticate, requireSenior, checkTaskAccess } from '../middleware/auth.js';
-import { getTaskList } from '../controllers/search.controller.js';
-import { getTaskById } from '../controllers/view.controller.js';
-import { createTask } from '../controllers/create.controller.js';
-import { updateTask } from '../controllers/update.controller.js';
-import { deleteTask, bulkDeleteTasks } from '../controllers/delete.controller.js';
-import { addComment, getComments } from '../controllers/comment.controller.js';
+import express from "express";
+import { Task } from "../models/Task.js";
+import { User } from "../models/User.js";
+import {
+  authenticate,
+  requireSenior,
+  checkTaskAccess,
+} from "../middleware/auth.js";
+import {
+  taskOperationsLimiter,
+  searchRateLimiter,
+} from "../middleware/rateLimiter.js";
+import {
+  validateTask,
+  validateComment,
+  validateObjectId,
+} from "../middleware/validation.js";
+import { getTaskList } from "../controllers/search.controller.js";
+import { getTaskById } from "../controllers/view.controller.js";
+import { createTask } from "../controllers/create.controller.js";
+import { updateTask } from "../controllers/update.controller.js";
+import {
+  deleteTask,
+  bulkDeleteTasks,
+} from "../controllers/delete.controller.js";
+import { addComment, getComments } from "../controllers/comment.controller.js";
 
 const router = express.Router();
 
 // Add a comment to a task
-router.post('/:taskId/comments', authenticate, addComment);
+router.post(
+  "/:taskId/comments",
+  authenticate,
+  taskOperationsLimiter,
+  validateObjectId,
+  validateComment,
+  addComment
+);
 
 // Get all comments for a task
-router.get('/:taskId/comments', authenticate, getComments);
-import { subscribeToTaskChanges, subscribeToTaskById, getSSEInfo } from '../controllers/realtime.controller.js';
-import { getUsersInDomain, getUsersFiltered, getFilterOptions } from '../controllers/users.controller.js';
-import { getTaskPermissions } from '../controllers/permissions.controller.js';
-import { 
-    batchCreateTasks, 
-    batchUpdateTasks, 
-    batchUpsertTasks, 
-    batchDeleteTasks 
-} from '../controllers/batch.controller.js';
+router.get("/:taskId/comments", authenticate, getComments);
+import {
+  subscribeToTaskChanges,
+  subscribeToTaskById,
+  getSSEInfo,
+} from "../controllers/realtime.controller.js";
+import {
+  getUsersInDomain,
+  getUsersFiltered,
+  getFilterOptions,
+} from "../controllers/users.controller.js";
+import { getTaskPermissions } from "../controllers/permissions.controller.js";
+import {
+  batchCreateTasks,
+  batchUpdateTasks,
+  batchUpsertTasks,
+  batchDeleteTasks,
+} from "../controllers/batch.controller.js";
 
 // ...existing code...
 
 // GET ALL USERS (for individual selection mode)
-router.get('/users', authenticate, getUsersInDomain);
+router.get("/users", authenticate, getUsersInDomain);
 
 // GET FILTERED USERS (for domain-specific assignment)
-router.get('/users/filtered', authenticate, getUsersFiltered);
+router.get("/users/filtered", authenticate, getUsersFiltered);
 
 // GET FILTER OPTIONS (domains, roles, combinations) - temp without auth for testing
-router.get('/users/filter-options', getFilterOptions);
+router.get("/users/filter-options", getFilterOptions);
 
 // LIST/SEARCH TASKS
-router.get('/', authenticate, getTaskList);
+router.get("/", authenticate, searchRateLimiter, getTaskList);
 
 // VIEW SINGLE TASK
-router.get('/:id', authenticate, getTaskById);
+router.get("/:id", authenticate, validateObjectId, getTaskById);
 
 // GET TASK PERMISSIONS
-router.get('/:id/permissions', authenticate, getTaskPermissions);
+router.get(
+  "/:id/permissions",
+  authenticate,
+  validateObjectId,
+  getTaskPermissions
+);
 
 // CREATE NEW TASK
-router.post('/', authenticate, createTask);
+router.post("/", authenticate, taskOperationsLimiter, validateTask, createTask);
 
 // UPDATE TASK
-router.put('/:id', authenticate, updateTask);
+router.put(
+  "/:id",
+  authenticate,
+  taskOperationsLimiter,
+  validateObjectId,
+  validateTask,
+  updateTask
+);
 
 // DELETE TASK
-router.delete('/:id', authenticate, deleteTask);
+router.delete("/:id", authenticate, taskOperationsLimiter, deleteTask);
 
 // REALTIME ENDPOINTS
-router.get('/realtime/info', authenticate, getSSEInfo);
-router.get('/realtime', authenticate, subscribeToTaskChanges);
-router.get('/realtime/:id', authenticate, subscribeToTaskById);
+router.get("/realtime/info", authenticate, getSSEInfo);
+router.get("/realtime", authenticate, subscribeToTaskChanges);
+router.get("/realtime/:id", authenticate, subscribeToTaskById);
 
 // BATCH OPERATIONS
-router.post('/batch/create', authenticate, batchCreateTasks);
-router.put('/batch/update', authenticate, batchUpdateTasks);
-router.post('/batch/upsert', authenticate, batchUpsertTasks);
-router.delete('/batch/delete', authenticate, batchDeleteTasks);
+router.post(
+  "/batch/create",
+  authenticate,
+  taskOperationsLimiter,
+  batchCreateTasks
+);
+router.put(
+  "/batch/update",
+  authenticate,
+  taskOperationsLimiter,
+  batchUpdateTasks
+);
+router.post(
+  "/batch/upsert",
+  authenticate,
+  taskOperationsLimiter,
+  batchUpsertTasks
+);
+router.delete(
+  "/batch/delete",
+  authenticate,
+  taskOperationsLimiter,
+  batchDeleteTasks
+);
 
 // BULK DELETE (alternative endpoint)
-router.post('/bulk-delete', authenticate, bulkDeleteTasks);
+router.post("/bulk-delete", authenticate, bulkDeleteTasks);
 //     try {
 //         const task = await Task.findById(req.params.id)
 //             .populate('taskMaker', 'name email role')

@@ -51,7 +51,7 @@ const Login = () => {
                 setError(errorData.message || 'Invalid email or password.');
             }
         } catch (err) {
-            setError('Network error. Please try again.');
+            setError(`Network error. Please try again.${err}`);
             console.error('Login error:', err);
         } finally {
             setIsLoading(false);

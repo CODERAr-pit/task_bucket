@@ -21,7 +21,7 @@ router.post(
   async (req, res) => {
     try {
       const { name, email, password, role, domain, domains } = req.body;
-
+      console.log(name)
       // Prepare domains array (validation already handled by middleware)
       const userDomains =
         domains && domains.length > 0 ? domains : domain ? [domain] : null;

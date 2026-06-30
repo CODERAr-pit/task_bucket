@@ -28,7 +28,7 @@ const PORT = process.env.PORT || 8000;
 const connectDB = async () => {
   try {
     const conn = await mongoose.connect(
-      process.env.MONGODB_URI || "mongodb://localhost:27017/taskbucket"
+      process.env.MONGODB_URI
     );
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
@@ -50,9 +50,6 @@ app.use(
   cors({
     origin: [
       process.env.CLIENT_URL,
-      "http://localhost:3000",
-      "http://localhost:5173",
-      "http://localhost:8000",
       // 'https://task-bucket.vercel.app'
     ].filter(Boolean),
     credentials: true,

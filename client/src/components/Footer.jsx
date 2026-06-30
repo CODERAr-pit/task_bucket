@@ -23,7 +23,7 @@ const Footer = () => {
                         </a>
                     </p>
                     <p className="text-text-secondary/70 text-xs">
-                        © 2025 EDC. All Rights Reserved.
+                        © 2026 EDC. All Rights Reserved.
                     </p>
                 </div>
 

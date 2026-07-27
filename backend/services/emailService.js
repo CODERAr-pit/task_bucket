@@ -1,19 +1,26 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Create Gmail transporter
-const createTransporter = () => {
-    return nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: process.env.SMTP_PORT,
-        secure: false,
-        auth: {
-            user: process.env.GMAIL_USER,
-            pass: process.env.GMAIL_APP_PASSWORD
-        }
+// Resend sends over HTTPS (port 443), so it works on hosts like Render
+// that block outbound SMTP ports (25 / 465 / 587).
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+// One-line `sendEmail(...)` for every call site below
+const sendEmail = async ({ to, subject, html }) => {
+    const { data, error } = await resend.emails.send({
+        from: process.env.FROM_EMAIL,
+        to,
+        subject,
+        html
     });
+
+    if (error) {
+        throw new Error(error.message || 'Failed to send email via Resend');
+    }
+
+    return data;
 };
 
 // Email templates
@@ -402,13 +409,11 @@ const emailTemplates = {
 // Send email functions
 export const sendNewUserNotificationToAdmins = async (userName, userEmail, userId, userRole, userDomains) => {
     try {
-        const transporter = createTransporter();
         const adminEmails = process.env.ADMIN_EMAILS.split(',');
         const template = emailTemplates.newUserRegistration(userName, userEmail, userId, userRole, userDomains);
         
         for (const adminEmail of adminEmails) {
-            await transporter.sendMail({
-                from: process.env.GMAIL_USER,
+            await sendEmail({
                 to: adminEmail.trim(),
                 subject: template.subject,
                 html: template.html
@@ -425,11 +430,9 @@ export const sendNewUserNotificationToAdmins = async (userName, userEmail, userI
 
 export const sendUserApprovalEmail = async (userEmail, userName) => {
     try {
-        const transporter = createTransporter();
         const template = emailTemplates.userApproved(userName);
         
-        await transporter.sendMail({
-            from: process.env.GMAIL_USER,
+        await sendEmail({
             to: userEmail,
             subject: template.subject,
             html: template.html
@@ -445,11 +448,9 @@ export const sendUserApprovalEmail = async (userEmail, userName) => {
 
 export const sendUserRejectionEmail = async (userEmail, userName, reason) => {
     try {
-        const transporter = createTransporter();
         const template = emailTemplates.userRejected(userName, reason);
         
-        await transporter.sendMail({
-            from: process.env.GMAIL_USER,
+        await sendEmail({
             to: userEmail,
             subject: template.subject,
             html: template.html
@@ -465,11 +466,9 @@ export const sendUserRejectionEmail = async (userEmail, userName, reason) => {
 
 export const sendTaskAssignmentEmail = async (userEmail, userName, taskTitle, taskDescription, dueDate, assignedBy) => {
     try {
-        const transporter = createTransporter();
         const template = emailTemplates.taskAssigned(userName, taskTitle, taskDescription, dueDate, assignedBy);
         
-        await transporter.sendMail({
-            from: process.env.GMAIL_USER,
+        await sendEmail({
             to: userEmail,
             subject: template.subject,
             html: template.html
@@ -485,11 +484,9 @@ export const sendTaskAssignmentEmail = async (userEmail, userName, taskTitle, ta
 
 export const sendTaskReminderEmail = async (userEmail, userName, tasks) => {
     try {
-        const transporter = createTransporter();
         const template = emailTemplates.taskReminder(userName, tasks);
         
-        await transporter.sendMail({
-            from: process.env.GMAIL_USER,
+        await sendEmail({
             to: userEmail,
             subject: template.subject,
             html: template.html
@@ -505,11 +502,9 @@ export const sendTaskReminderEmail = async (userEmail, userName, tasks) => {
 
 export const sendDeadlineReminder5Days = async (userEmail, userName, tasks) => {
     try {
-        const transporter = createTransporter();
         const template = emailTemplates.deadlineReminder5Days(userName, tasks);
         
-        await transporter.sendMail({
-            from: process.env.GMAIL_USER,
+        await sendEmail({
             to: userEmail,
             subject: template.subject,
             html: template.html
@@ -525,11 +520,9 @@ export const sendDeadlineReminder5Days = async (userEmail, userName, tasks) => {
 
 export const sendDeadlineReminder3Days = async (userEmail, userName, tasks) => {
     try {
-        const transporter = createTransporter();
         const template = emailTemplates.deadlineReminder3Days(userName, tasks);
         
-        await transporter.sendMail({
-            from: process.env.GMAIL_USER,
+        await sendEmail({
             to: userEmail,
             subject: template.subject,
             html: template.html
@@ -545,11 +538,9 @@ export const sendDeadlineReminder3Days = async (userEmail, userName, tasks) => {
 
 export const sendDeadlineReminder1Day = async (userEmail, userName, tasks) => {
     try {
-        const transporter = createTransporter();
         const template = emailTemplates.deadlineReminder1Day(userName, tasks);
         
-        await transporter.sendMail({
-            from: process.env.GMAIL_USER,
+        await sendEmail({
             to: userEmail,
             subject: template.subject,
             html: template.html
@@ -564,12 +555,22 @@ export const sendDeadlineReminder1Day = async (userEmail, userName, tasks) => {
 };
 
 // Test email function for setup verification
+// Sends a real test email to confirm the API key and FROM_EMAIL work.
 export const testEmailConfiguration = async () => {
     try {
-        const transporter = createTransporter();
-        
-        // Verify connection
-        await transporter.verify();
+        if (!process.env.RESEND_API_KEY) {
+            throw new Error('RESEND_API_KEY is not set');
+        }
+        if (!process.env.FROM_EMAIL) {
+            throw new Error('FROM_EMAIL is not set');
+        }
+
+        await sendEmail({
+            to: process.env.ADMIN_EMAILS?.split(',')[0]?.trim() || process.env.FROM_EMAIL,
+            subject: 'TaskBucket Email Configuration Test',
+            html: '<p>This is a test email confirming your Resend configuration is working.</p>'
+        });
+
         console.log('Email configuration is valid and ready to send emails');
         return { success: true, message: 'Email configuration verified successfully' };
     } catch (error) {
